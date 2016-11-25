@@ -5,7 +5,7 @@ script:
   - ./Cardano_csl.hs --help
   - ./Cardano_tw.hs --help
   - nix-instantiate default.nix  
-  - nix-instantiate nixops.nix
+  - nix-shell -p nixopsUnstable --run "nixops create nixops.nix && nixops deploy --evaluate-only"
   - GENERATING_AMI=1 nix-instantiate release.nix
 
 notifications:
