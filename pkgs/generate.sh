@@ -10,7 +10,7 @@ cabal2nix https://github.com/serokell/acid-state.git --revision 95fce1dbada62020
 cabal2nix https://github.com/serokell/log-warper.git --revision c2a21fd2971d9ed48cdd7295f8efd56fc8ec4821 > log-warper.nix
 cabal2nix https://github.com/serokell/kademlia.git --no-check --revision 21df94f41008f82ee023e8e0324c7e4a82c4fef2 > kademlia.nix
 cabal2nix https://github.com/serokell/rocksdb-haskell.git --revision 4dfd8d61263d78a91168e86e8005eb9b7069389e > rocksdb-haskell.nix
-cabal2nix https://github.com/serokell/time-warp-nt.git --no-check --revision b48bd9b099e47d8c39aa6ddce261aa76f8488d75 > time-warp-nt.nix
+cabal2nix https://github.com/serokell/time-warp-nt.git --no-check --revision 08855c3002d36a898bdb58754d7b184c200f4b17 > time-warp-nt.nix
 
 cabal2nix https://github.com/thoughtpolice/hs-ed25519.git --revision da4247b5b3420120e20451e6a252e2a2ca15b43c > ed25519.nix
 cabal2nix https://github.com/avieth/network-transport.git --no-check --revision f2321a103f53f51d36c99383132e3ffa3ef1c401 > network-transport.nix
@@ -25,4 +25,4 @@ cabal2nix https://github.com/input-output-hk/plutus-prototype.git --revision e2e
 
 # TODO: https://github.com/NixOS/cabal2nix/issues/261
 nix-prefetch-git https://github.com/serokell/engine.io.git a594e402fd450f11ad60d09ddbd93db500000632 > engine-io.json
-nix-prefetch-git https://github.com/input-output-hk/cardano-sl.git be7cb65f71e7bd5b34778652009469c4513ecb79 > cardano-sl.json
+nix-prefetch-git https://github.com/input-output-hk/cardano-sl.git e52b75523b42a454613127c7efdb62d36dc53ecf > cardano-sl.json
