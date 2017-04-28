@@ -1,6 +1,11 @@
 HASH_COMMIT=$1
 
-ssh staging@35.156.156.28
+if [ -z "$HASH_COMMIT" ]
+  then
+    echo "No commit hash supplied. Please pass in the commit hash identifier you want to deploy on the server."
+    exit 1
+fi
+
 cd ~/devops-86-deploy-staging-explorer/pkgs
 # MAC users, beware! Not sure if the flags are correct.
 sed -ri "s/cabal2nix https:\/\/github\.com\/input-output-hk\/cardano-sl-explorer\.git --no-check --revision(.*?)> cardano-sl-explorer.nix/cabal2nix https:\/\/github\.com\/input-output-hk\/cardano-sl-explorer\.git --no-check --revision $HASH_COMMIT > cardano-sl-explorer.nix/g" generate.sh
