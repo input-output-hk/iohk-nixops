@@ -39,6 +39,12 @@ mkDerivation {
    base turtle cassava vector safe aeson yaml lens-aeson
   ];
   license      = stdenv.lib.licenses.agpl3;
+
+  shellHook =
+  ''
+    export NIX_PATH=nixpkgs=${nixpkgs}
+    echo   NIX_PATH=$NIX_PATH
+  '';
 };
 
 drv = (pkgs.haskell.lib.addBuildTools
