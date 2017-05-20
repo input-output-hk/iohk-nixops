@@ -49,10 +49,11 @@ mkDerivation {
 
 drv = (pkgs.haskell.lib.addBuildTools
 (ghc.callPackage drvf { })
-(if intero
- then [ pkgs.cabal-install
-        pkgs.stack
-        ghc.intero ]
- else []));
+((if intero
+  then [ pkgs.cabal-install
+         pkgs.stack
+         ghc.intero ]
+  else [ ]) ++
+ [ pkgs.nix ]));
 
 in drv.env
