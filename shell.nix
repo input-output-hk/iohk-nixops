@@ -1,14 +1,16 @@
-{ pkgs     ? import ((import <nixpkgs> {}).fetchFromGitHub (builtins.fromJSON (builtins.readFile ./nixpkgs-src.json))) {}
-, compiler ? pkgs.haskell.packages.ghc802
+let
+  nixpkgs  = (import <nixpkgs> {}).fetchFromGitHub (builtins.fromJSON (builtins.readFile ./nixpkgs-src.json));
+  pkgs     = import nixpkgs {};
+in
+{ compiler ? pkgs.haskell.packages.ghc802
 , intero   ? false
 }:
 
 let
 
 ghcOrig   = import ./default.nix { inherit pkgs compiler; };
-overcabal = pkgs.haskell.lib.overrideCabal;
 hubsrc    =      repo: rev: sha256:       pkgs.fetchgit { url = "https://github.com/" + repo; rev = rev; sha256 = sha256; };
-overc     = old:                    args: overcabal old (oldAttrs: (oldAttrs // args));
+overc     = old:                    args: pkgs.haskell.lib.overrideCabal old (oldAttrs: (oldAttrs // args));
 overhub   = old: repo: rev: sha256: args: overc old ({ src = hubsrc repo rev sha256; }       // args);
 overhage  = old: version:   sha256: args: overc old ({ version = version; sha256 = sha256; } // args);
 ghc       = ghcOrig.override (oldArgs: {
@@ -36,7 +38,6 @@ mkDerivation {
   executableHaskellDepends = [
    base turtle cassava vector safe aeson yaml lens-aeson
   ];
-  # description  = "Visual mind assistant";
   license      = stdenv.lib.licenses.agpl3;
 };
 
