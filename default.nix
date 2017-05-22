@@ -1,5 +1,6 @@
 { pkgs ? (import <nixpkgs> {})
 , compiler ? pkgs.haskell.packages.ghc802
+, builder-threads ? 8
 }:
 
 with (import <nixpkgs/pkgs/development/haskell-modules/lib.nix> { inherit pkgs;});
@@ -11,13 +12,13 @@ let
   });
   socket-io-src = pkgs.fetchgit (removeAttrs (lib.importJSON ./pkgs/engine-io.json) ["date"]);
   cardano-sl-src = pkgs.fetchgit (removeAttrs (lib.importJSON ./pkgs/cardano-sl.json) ["date"]);
-  cores   = 4;
-  threads = 8;
+
+  builder-cores   = builtins.div builder-threads 2;
   buildSubset = subset: drv: overrideCabal drv (drv: {
     buildTarget = subset;
   });
   buildSpeedupFlagsMarlowScaling = drv : appendConfigureFlag drv
-    "--ghc-option=-rtsopts --ghc-option=+RTS --ghc-option=-N${toString threads} --ghc-option=-A128m --ghc-option=-n2m --ghc-option=-qb0 --ghc-option=-qn${toString cores} --ghc-option=-RTS";
+    "--ghc-option=-rtsopts --ghc-option=+RTS --ghc-option=-N${toString builder-threads} --ghc-option=-A128m --ghc-option=-n2m --ghc-option=-qb0 --ghc-option=-qn${toString builder-cores} --ghc-option=-RTS";
 in compiler.override {
   overrides = self: super: {
     # To generate these go to ./pkgs and run ./generate.sh
