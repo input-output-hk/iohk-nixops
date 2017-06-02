@@ -9,6 +9,13 @@ let
   prodMode = drv: overrideCabal drv (drv: {
     configureFlags = [ "-f-asserts" "-f-dev-mode"];
   });
+
+  githubSrc     =      repo: rev: sha256:       pkgs.fetchgit  { url = "https://github.com/" + repo; rev = rev; sha256 = sha256; };
+  overC         =                               pkgs.haskell.lib.overrideCabal;
+  overCabal     = old:                    args: overC old (oldAttrs: (oldAttrs // args));
+  overGithub    = old: repo: rev: sha256: args: overC old ({ src = githubSrc repo rev sha256; }     // args);
+  overHackage   = old: version:   sha256: args: overC old ({ version = version; sha256 = sha256; } // args);
+
   socket-io-src = pkgs.fetchgit (removeAttrs (lib.importJSON ./pkgs/engine-io.json) ["date"]);
   cardano-sl-src = pkgs.fetchgit (removeAttrs (lib.importJSON ./pkgs/cardano-sl.json) ["date"]);
 in compiler.override {

@@ -6,13 +6,14 @@ nixpkgs       = (import <nixpkgs> {}).fetchFromGitHub (builtins.fromJSON (builti
 pkgs          = import nixpkgs {};
 compiler      = pkgs.haskell.packages."${ghcVer}";
 
+ghcOrig       = import ./default.nix { inherit pkgs compiler; };
 
-ghcOrig   = import ./default.nix { inherit pkgs compiler; };
-overcabal = pkgs.haskell.lib.overrideCabal;
-hubsrc    =      repo: rev: sha256:       pkgs.fetchgit { url = "https://github.com/" + repo; rev = rev; sha256 = sha256; };
-overc     = old:                    args: overcabal old (oldAttrs: (oldAttrs // args));
-overhub   = old: repo: rev: sha256: args: overc old ({ src = hubsrc repo rev sha256; }       // args);
-overhage  = old: version:   sha256: args: overc old ({ version = version; sha256 = sha256; } // args);
+githubSrc     =      repo: rev: sha256:       pkgs.fetchgit  { url = "https://github.com/" + repo; rev = rev; sha256 = sha256; };
+overC         =                               pkgs.haskell.lib.overrideCabal;
+overCabal     = old:                    args: overC old (oldAttrs: (oldAttrs // args));
+overGithub    = old: repo: rev: sha256: args: overC old ({ src = githubSrc repo rev sha256; }     // args);
+overHackage   = old: version:   sha256: args: overC old ({ version = version; sha256 = sha256; } // args);
+
 ghc       = ghcOrig.override (oldArgs: {
   overrides = with pkgs.haskell.lib; new: old:
   let parent = (oldArgs.overrides or (_: _: {})) new old;
