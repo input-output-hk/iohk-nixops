@@ -1,7 +1,7 @@
 language: nix
 
 env:
-  NIX_PATH=nixpkgs=https://github.com/NixOS/nixpkgs/archive/fe62c993b5dfecb871a54eb6654b09bcd5595fe5.tar.gz
+  NIX_PATH=nixpkgs=https://github.com/NixOS/nixpkgs/archive/c0b1e8a5fb174cd405dcca9f7fec275714ad9f4b.tar.gz
 
 install:
   - nix-env -iA nixopsUnstable -f '<nixpkgs>'
