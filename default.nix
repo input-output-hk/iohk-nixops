@@ -1,5 +1,6 @@
 { pkgs ? (import <nixpkgs> {})
 , compiler ? pkgs.haskell.packages.ghc802
+, builder-threads ? 8
 }:
 
 with (import <nixpkgs/pkgs/development/haskell-modules/lib.nix> { inherit pkgs;});
@@ -11,6 +12,13 @@ let
   });
   socket-io-src = pkgs.fetchgit (removeAttrs (lib.importJSON ./pkgs/engine-io.json) ["date"]);
   cardano-sl-src = pkgs.fetchgit (removeAttrs (lib.importJSON ./pkgs/cardano-sl.json) ["date"]);
+
+  builder-cores   = builtins.div builder-threads 2;
+  buildSubset = subset: drv: overrideCabal drv (drv: {
+    buildTarget = subset;
+  });
+  buildSpeedupFlagsMarlowScaling = drv : appendConfigureFlag drv
+    "--ghc-option=-rtsopts --ghc-option=+RTS --ghc-option=-N${toString builder-threads} --ghc-option=-A128m --ghc-option=-n2m --ghc-option=-qb0 --ghc-option=-qn${toString builder-cores} --ghc-option=-RTS";
 in compiler.override {
   overrides = self: super: {
     # To generate these go to ./pkgs and run ./generate.sh
@@ -62,7 +70,10 @@ in compiler.override {
       # production full nodes shouldn't use wallet as it means different constants
       configureFlags = [ "-f-asserts" "-f-dev-mode" "-fwith-explorer"];
     });
-    cardano-sl-static = justStaticExecutables self.cardano-sl;
+    cardano-sl-static =
+      buildSpeedupFlagsMarlowScaling
+      (# buildSubset ("cardano-node") -- unfortunately, we need customizing the .cabal file for this to work..
+       (dontCheck (linkWithGold (justStaticExecutables self.cardano-sl))));
     cardano-report-server-static = justStaticExecutables self.cardano-report-server;
     cardano-sl-explorer-static = justStaticExecutables self.cardano-sl-explorer;
 
