@@ -19,6 +19,7 @@ testIndex: region:
         );
         publicIP = if options.networking.publicIPv4.isDefined then config.networking.publicIPv4 else null;
         privateIP = if options.networking.privateIPv4.isDefined then config.networking.privateIPv4 else "0.0.0.0";
+        ekgSink = "127.0.0.1:8125";
       };
 
       # TODO: DEVOPS-8
