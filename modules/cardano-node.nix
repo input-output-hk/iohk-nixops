@@ -44,6 +44,7 @@ let
        then "--bitcoin-distr \"${distributionParam}\""
        else "--flat-distr \"${distributionParam}\""))
     (optionalString cfg.jsonLog "--json-log ${stateDir}/jsonLog.json")
+    (optionalString (cfg.ekgSink != null) "--metrics +RTS -T -RTS --statsd-server ${cfg.ekgSink}")
     "--kademlia-id ${cfg.dhtKey}"
     (optionalString cfg.productionMode "--keyfile ${stateDir}key${toString (cfg.testIndex + 1)}.sk")
     (optionalString (cfg.productionMode && cfg.systemStart != 0) "--system-start ${toString cfg.systemStart}")
@@ -87,6 +88,11 @@ in {
       slotDuration = mkOption { type = types.int; };
       networkDiameter = mkOption { type = types.int; };
       mpcRelayInterval = mkOption { type = types.int; };
+      ekgSink = mkOption {
+        type = types.str;
+        description = "IP:Port of the EKG telemetry sink";
+        default = null;
+      };
 
       stats = mkOption { type = types.bool; default = false; };
       jsonLog = mkOption { type = types.bool; default = true; };
