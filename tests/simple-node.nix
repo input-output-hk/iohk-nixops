@@ -13,7 +13,8 @@ import <nixpkgs/nixos/tests/make-test.nix> ({ pkgs, ... }: {
     startAll
     $machine->waitForUnit("cardano-node.service");
 
-    # is it working now?
+
+
 
     # TODO, implement sd_notify?
     $machine->waitForOpenPort(3000);
