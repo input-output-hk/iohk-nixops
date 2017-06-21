@@ -1340,6 +1340,7 @@ self: {
             tasty
             tasty-quickcheck
           ];
+          postInstall = "rm $out/bin/cardano-node";
           doHaddock = false;
           doCheck = false;
           homepage = "https://github.com/input-output-hk/cardano-crypto#readme";
