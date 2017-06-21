@@ -1340,7 +1340,6 @@ self: {
             tasty
             tasty-quickcheck
           ];
-          postUnpack = "exit 1";
           doHaddock = false;
           doCheck = false;
           homepage = "https://github.com/input-output-hk/cardano-crypto#readme";
