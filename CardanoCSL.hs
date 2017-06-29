@@ -17,6 +17,7 @@ import Control.Lens
 import Filesystem.Path.CurrentOS (encodeString)
 import Data.Aeson
 import Data.Aeson.Lens
+import qualified Data.List as L
 import Data.Maybe (catMaybes, fromJust)
 import Data.Monoid ((<>))
 import Data.Yaml (decodeFile)
@@ -26,6 +27,7 @@ import Data.Text.Lazy.Encoding (encodeUtf8)
 import qualified Data.Text as T
 import GHC.Generics
 import Text.Printf
+import Text.Read (readMaybe)
 import qualified Data.Map as M
 
 import NixOps
@@ -217,12 +219,14 @@ generateIPDHTMappings c = runError $ do
 
 
 getNodesMap :: NixOpsConfig -> IO (Either String (M.Map Int DeploymentInfo))
-getNodesMap c = fmap (toMap . toNodesInfo) <$> info c
+getNodesMap c = (toMap <=< fmap toNodesInfo) <$> info c
   where
-    toMap :: [DeploymentInfo] -> M.Map Int DeploymentInfo
-    toMap = M.fromList . catMaybes . map (\d -> (,d) <$> extractName (T.unpack . getNodeName $ diName d))
-    extractName ('n':'o':'d':'e':rest) = Just $ read rest
-    extractName _ = Nothing
+    toMap :: [DeploymentInfo] -> Either String (M.Map Int DeploymentInfo)
+    toMap = fmap M.fromList . sequenceA .
+            map (\d -> (,d) <$> extractName
+                                (T.unpack . getNodeName $ diName d))
+    extractName = maybe (Left  "Bad node name") Right .
+                  (L.stripPrefix "node" >=> readMaybe)
 
 runError :: ExceptT String IO Text -> IO Text
 runError action = runExceptT action >>=
