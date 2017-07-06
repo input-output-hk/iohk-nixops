@@ -1431,8 +1431,8 @@ self: {
           version = "0.4.4";
           src = fetchgit {
             url = "https://github.com/input-output-hk/cardano-sl.git";
-            sha256 = "068z88z9ygqakjvvxhv64rrdinax8pv3d5hqn4bi7d9ynixh7wb9";
-            rev = "9b5511860cb755270e4b7acfe3bdb39e381fd168";
+            sha256 = "19nbmhgh710whpnkb6m9capgz4dswp657w54x0rnjnw9y8bv3j41";
+            rev = "ee344327bf947cd7bfaf50e23aa0cc11b76c4361";
           };
           isLibrary = true;
           isExecutable = true;
@@ -1690,8 +1690,8 @@ self: {
           version = "0.4.4";
           src = fetchgit {
             url = "https://github.com/input-output-hk/cardano-sl.git";
-            sha256 = "068z88z9ygqakjvvxhv64rrdinax8pv3d5hqn4bi7d9ynixh7wb9";
-            rev = "9b5511860cb755270e4b7acfe3bdb39e381fd168";
+            sha256 = "19nbmhgh710whpnkb6m9capgz4dswp657w54x0rnjnw9y8bv3j41";
+            rev = "ee344327bf947cd7bfaf50e23aa0cc11b76c4361";
           };
           postUnpack = "sourceRoot+=/core; echo source root reset to \$sourceRoot";
           libraryHaskellDepends = [
@@ -1764,8 +1764,8 @@ self: {
           version = "0.4.4";
           src = fetchgit {
             url = "https://github.com/input-output-hk/cardano-sl.git";
-            sha256 = "068z88z9ygqakjvvxhv64rrdinax8pv3d5hqn4bi7d9ynixh7wb9";
-            rev = "9b5511860cb755270e4b7acfe3bdb39e381fd168";
+            sha256 = "19nbmhgh710whpnkb6m9capgz4dswp657w54x0rnjnw9y8bv3j41";
+            rev = "ee344327bf947cd7bfaf50e23aa0cc11b76c4361";
           };
           postUnpack = "sourceRoot+=/db; echo source root reset to \$sourceRoot";
           libraryHaskellDepends = [
@@ -1802,8 +1802,8 @@ self: {
           version = "0.4.4";
           src = fetchgit {
             url = "https://github.com/input-output-hk/cardano-sl.git";
-            sha256 = "068z88z9ygqakjvvxhv64rrdinax8pv3d5hqn4bi7d9ynixh7wb9";
-            rev = "9b5511860cb755270e4b7acfe3bdb39e381fd168";
+            sha256 = "19nbmhgh710whpnkb6m9capgz4dswp657w54x0rnjnw9y8bv3j41";
+            rev = "ee344327bf947cd7bfaf50e23aa0cc11b76c4361";
           };
           postUnpack = "sourceRoot+=/godtossing; echo source root reset to \$sourceRoot";
           libraryHaskellDepends = [
@@ -1850,8 +1850,8 @@ self: {
           version = "0.4.4";
           src = fetchgit {
             url = "https://github.com/input-output-hk/cardano-sl.git";
-            sha256 = "068z88z9ygqakjvvxhv64rrdinax8pv3d5hqn4bi7d9ynixh7wb9";
-            rev = "9b5511860cb755270e4b7acfe3bdb39e381fd168";
+            sha256 = "19nbmhgh710whpnkb6m9capgz4dswp657w54x0rnjnw9y8bv3j41";
+            rev = "ee344327bf947cd7bfaf50e23aa0cc11b76c4361";
           };
           postUnpack = "sourceRoot+=/infra; echo source root reset to \$sourceRoot";
           libraryHaskellDepends = [
@@ -1913,8 +1913,8 @@ self: {
           version = "0.4.4";
           src = fetchgit {
             url = "https://github.com/input-output-hk/cardano-sl.git";
-            sha256 = "068z88z9ygqakjvvxhv64rrdinax8pv3d5hqn4bi7d9ynixh7wb9";
-            rev = "9b5511860cb755270e4b7acfe3bdb39e381fd168";
+            sha256 = "19nbmhgh710whpnkb6m9capgz4dswp657w54x0rnjnw9y8bv3j41";
+            rev = "ee344327bf947cd7bfaf50e23aa0cc11b76c4361";
           };
           postUnpack = "sourceRoot+=/lrc; echo source root reset to \$sourceRoot";
           libraryHaskellDepends = [
@@ -1943,8 +1943,8 @@ self: {
           version = "0.4.4";
           src = fetchgit {
             url = "https://github.com/input-output-hk/cardano-sl.git";
-            sha256 = "068z88z9ygqakjvvxhv64rrdinax8pv3d5hqn4bi7d9ynixh7wb9";
-            rev = "9b5511860cb755270e4b7acfe3bdb39e381fd168";
+            sha256 = "19nbmhgh710whpnkb6m9capgz4dswp657w54x0rnjnw9y8bv3j41";
+            rev = "ee344327bf947cd7bfaf50e23aa0cc11b76c4361";
           };
           postUnpack = "sourceRoot+=/ssc; echo source root reset to \$sourceRoot";
           libraryHaskellDepends = [
@@ -1980,8 +1980,8 @@ self: {
           version = "0.4.4";
           src = fetchgit {
             url = "https://github.com/input-output-hk/cardano-sl.git";
-            sha256 = "068z88z9ygqakjvvxhv64rrdinax8pv3d5hqn4bi7d9ynixh7wb9";
-            rev = "9b5511860cb755270e4b7acfe3bdb39e381fd168";
+            sha256 = "19nbmhgh710whpnkb6m9capgz4dswp657w54x0rnjnw9y8bv3j41";
+            rev = "ee344327bf947cd7bfaf50e23aa0cc11b76c4361";
           };
           postUnpack = "sourceRoot+=/txp; echo source root reset to \$sourceRoot";
           libraryHaskellDepends = [
@@ -2029,8 +2029,8 @@ self: {
           version = "0.4.4";
           src = fetchgit {
             url = "https://github.com/input-output-hk/cardano-sl.git";
-            sha256 = "068z88z9ygqakjvvxhv64rrdinax8pv3d5hqn4bi7d9ynixh7wb9";
-            rev = "9b5511860cb755270e4b7acfe3bdb39e381fd168";
+            sha256 = "19nbmhgh710whpnkb6m9capgz4dswp657w54x0rnjnw9y8bv3j41";
+            rev = "ee344327bf947cd7bfaf50e23aa0cc11b76c4361";
           };
           postUnpack = "sourceRoot+=/update; echo source root reset to \$sourceRoot";
           libraryHaskellDepends = [
@@ -7898,27 +7898,6 @@ self: {
           doCheck = false;
           homepage = "https://github.com/DanielSchuessler/th-expand-syns";
           description = "Expands type synonyms in Template Haskell ASTs";
-          license = stdenv.lib.licenses.bsd3;
-        }) {};
-      th-lift = callPackage ({ base, ghc-prim, mkDerivation, stdenv, template-haskell }:
-      mkDerivation {
-          pname = "th-lift";
-          version = "0.7.7";
-          sha256 = "1dfb0z42vrmdx579lkam07ic03d3v5y19339a3ca0bwpprpzmihn";
-          libraryHaskellDepends = [
-            base
-            ghc-prim
-            template-haskell
-          ];
-          testHaskellDepends = [
-            base
-            ghc-prim
-            template-haskell
-          ];
-          doHaddock = false;
-          doCheck = false;
-          homepage = "http://github.com/mboes/th-lift";
-          description = "Derive Template Haskell's Lift class for datatypes";
           license = stdenv.lib.licenses.bsd3;
         }) {};
       th-lift-instances = callPackage ({ QuickCheck, base, bytestring, containers, mkDerivation, stdenv, template-haskell, text, th-lift, vector }:
