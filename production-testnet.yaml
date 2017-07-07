@@ -1,0 +1,25 @@
+args:
+  nodeLimit:
+    tag: NixInt
+    contents: 14
+  accessKeyId:
+    tag: NixStr
+    contents: iohk
+environment: Production
+name: testnet05-production
+files:
+- deployments/keypairs.nix
+- deployments/cardano-nodes.nix
+- deployments/cardano-nodes-env-production.nix
+- deployments/cardano-nodes-target-aws.nix
+- deployments/report-server.nix
+- deployments/report-server-env-production.nix
+- deployments/report-server-target-aws.nix
+- deployments/cardano-explorer.nix
+- deployments/cardano-explorer-env-production.nix
+- deployments/cardano-explorer-target-aws.nix
+elements:
+- Nodes
+- ReportServer
+- Explorer
+target: AWS

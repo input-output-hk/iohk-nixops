@@ -6,7 +6,7 @@ with pkgs.lib;
 with (import <nixpkgs/pkgs/development/haskell-modules/lib.nix> { inherit pkgs;});
 
 let
-  prodMode = addConfigureFlags [ "-f-asserts" "-f-dev-mode" "--ghc-options=-DCONFIG=testnet_staging"];
+  prodMode = addConfigureFlags [ "-f-asserts" "-f-dev-mode" "--ghc-options=-DCONFIG=testnet"];
   addConfigureFlags = flags: drv: overrideCabal drv (drv: {
     configureFlags = flags;
   });
