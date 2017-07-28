@@ -1,8 +1,8 @@
-{ accessKeyId, nodeLimit, ... }:
+{ accessKeyId, ... }:
 
 with (import ./../lib.nix);
 let
-  nodes = import ./cardano-nodes-config.nix { inherit nodeLimit; };
+  nodes = import ./cardano-nodes-config.nix { inherit accessKeyId; };
   nodeProdConf = import ./../modules/cardano-node-prod.nix;
 in {
   resources = {
@@ -15,4 +15,4 @@ in {
       cardano_node_process = mkMonitor cardano_node_process_monitor;
     });
   };
-} // (mkNodes nodes (i: r: nodeProdConf))
+} // (mkNodesUsing (params: nodeProdConf) nodes)

@@ -5,7 +5,8 @@ import <nixpkgs/nixos/tests/make-test.nix> ({ pkgs, ... }: {
       imports = [ (import ../modules/cardano-node-config.nix 0 "") ];
       services.cardano-node = {
         autoStart = true;
-        initialPeers = [];
+        initialKademliaPeers = [];
+        neighbours = [];
       };
     };
   };

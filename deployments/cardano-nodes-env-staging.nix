@@ -1,8 +1,8 @@
-{ accessKeyId, nodeLimit, ... }:
+{ accessKeyId, ... }:
 
 with (import ./../lib.nix);
 let
-  nodes = import ./cardano-nodes-config.nix { inherit nodeLimit; };
+  nodes = import ./cardano-nodes-config.nix { inherit accessKeyId; };
   nodeStagConf = import ./../modules/cardano-node-staging.nix;
 in {
   resources = {
@@ -27,4 +27,4 @@ in {
       });
     });
   };
-} // (mkNodes nodes (i: r: nodeStagConf))
+} // (mkNodesUsing (params: nodeStagConf) nodes)

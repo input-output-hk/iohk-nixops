@@ -1,6 +1,8 @@
-{ mkDerivation, aeson, base, bytestring, cassava, containers, lens
-, lens-aeson, mtl, nix-prefetch-scripts, optional-args, safe, stdenv, system-filepath
-, text, turtle, utf8-string, vector, yaml
+{ mkDerivation, stdenv
+,   aeson, amazonka, amazonka-core, amazonka-ec2, amazonka-iam, base, bytestring, cassava, conduit, containers
+,   exceptions, lens, lens-aeson, mtl, old-locale, optional-args, random, resourcet, safe, system-filepath
+,   text, text-format, time, tinylog, turtle, utf8-string, vector, yaml
+# non-haskell
 , awscli, nix-prefetch-scripts, wget
 }:
 mkDerivation {
@@ -10,9 +12,10 @@ mkDerivation {
   isLibrary = false;
   isExecutable = true;
   executableHaskellDepends = [
-    aeson base bytestring cassava containers lens lens-aeson mtl nix-prefetch-scripts
-    optional-args safe system-filepath text turtle utf8-string vector
-    yaml
+    aeson  amazonka  amazonka-core  amazonka-ec2  amazonka-iam  base  bytestring  cassava  conduit  containers
+    exceptions  lens  lens-aeson  mtl  old-locale  optional-args  random  resourcet  safe  system-filepath
+    text  text-format  time  tinylog  turtle  utf8-string vector  yaml
+    # non-haskell
     awscli nix-prefetch-scripts wget
   ];
   license = stdenv.lib.licenses.bsd3;

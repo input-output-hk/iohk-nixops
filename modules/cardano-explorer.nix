@@ -1,3 +1,9 @@
+let
+
+  explorer = (import ./../default.nix {}).cardano-sl-explorer-static;
+
+in
+
 { config, pkgs, lib, ... }:
 
 with (import ./../lib.nix);

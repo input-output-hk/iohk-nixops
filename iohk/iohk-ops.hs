@@ -3,17 +3,19 @@
 {-# OPTIONS_GHC -Wall -Wno-name-shadowing -Wno-missing-signatures -Wno-type-defaults #-}
 
 import           Control.Monad                    (forM_)
-import           Data.Monoid                      ((<>))
+import           Data.Char                        (toLower)
+import           Data.List
+import qualified Data.Map                      as Map
 import           Data.Maybe
+import           Data.Monoid                      ((<>))
 import           Data.Optional (Optional)
 import qualified Data.Text                     as T
 import qualified Filesystem.Path.CurrentOS     as Path
-import           Text.Read                        (readMaybe)
 import           Turtle                    hiding (procs, shells)
 
 import           NixOps                           (Branch(..), Commit(..), Environment(..), Deployment(..), Target(..)
                                                   ,Options(..), NixopsCmd(..), Project(..), Region(..), URL(..)
-                                                  ,showT, cmd, incmd, projectURL)
+                                                  ,showT, lowerShowT, errorT, cmd, incmd, projectURL, every)
 import qualified NixOps                        as Ops
 import qualified CardanoCSL                    as Cardano
 import qualified Timewarp                      as Timewarp
@@ -21,10 +23,19 @@ import qualified Timewarp                      as Timewarp
 
 -- * Elementary parsers
 --
-optReadLower :: Read a => ArgName -> ShortName -> Optional HelpMessage -> Parser a
-optReadLower = opt (readMaybe . T.unpack . T.toTitle)
-argReadLower :: Read a => ArgName -> Optional HelpMessage -> Parser a
-argReadLower = arg (readMaybe . T.unpack . T.toTitle)
+-- | Given a string, either return a constructor that being 'show'n case-insensitively matches the string,
+--   or raise an error, explaining what went wrong.
+diagReadCaseInsensitive :: (Bounded a, Enum a, Read a, Show a) => String -> Maybe a
+diagReadCaseInsensitive str = diagRead $ toLower <$> str
+  where mapping    = Map.fromList [ (toLower <$> show x, x) | x <- every ]
+        diagRead x = Just $ flip fromMaybe (Map.lookup x mapping)
+                     (errorT $ format ("Couldn't parse '"%s%"' as one of: "%s%"\n")
+                                        (T.pack str) (T.pack $ intercalate ", " $ Map.keys mapping))
+
+optReadLower :: (Bounded a, Enum a, Read a, Show a) => ArgName -> ShortName -> Optional HelpMessage -> Parser a
+optReadLower = opt (diagReadCaseInsensitive . T.unpack)
+argReadLower :: (Bounded a, Enum a, Read a, Show a) => ArgName -> Optional HelpMessage -> Parser a
+argReadLower = arg (diagReadCaseInsensitive . T.unpack)
 
 parserBranch :: Optional HelpMessage -> Parser Branch
 parserBranch desc = Branch <$> argText "branch" desc
@@ -33,16 +44,20 @@ parserCommit :: Optional HelpMessage -> Parser Commit
 parserCommit desc = Commit <$> argText "commit" desc
 
 parserEnvironment :: Parser Environment
-parserEnvironment = fromMaybe Ops.defaultEnvironment <$> optional (optReadLower "environment" 'e' "Environment: Development, Staging or Production;  defaults to Development")
+parserEnvironment = fromMaybe Ops.defaultEnvironment <$> optional (optReadLower "environment" 'e' $ pure $
+                                                                   Turtle.HelpMessage $ "Environment: "
+                                                                   <> T.intercalate ", " (lowerShowT <$> (every :: [Environment])) <> ".  Default: development")
 
 parserTarget      :: Parser Target
-parserTarget      = fromMaybe Ops.defaultTarget      <$> optional (optReadLower "target"      't' "Target: AWS, All;  defaults to AWS")
+parserTarget      = fromMaybe Ops.defaultTarget      <$> optional (optReadLower "target"      't' "Target: aws, all;  defaults to AWS")
 
 parserProject     :: Parser Project
-parserProject     = argReadLower "project" $ pure $ Turtle.HelpMessage ("Project to set version of: " <> T.intercalate ", " (showT <$> Ops.allProjects))
+parserProject     = argReadLower "project" $ pure $ Turtle.HelpMessage ("Project to set version of: " <> T.intercalate ", " (lowerShowT <$> (every :: [Project])))
 
 parserDeployment  :: Parser Deployment
-parserDeployment  = argRead "DEPL" "Deployment: 'Explorer', 'Nodes', 'Infra', 'ReportServer' or 'Timewarp'"
+parserDeployment  = argReadLower "DEPL" (pure $
+                                         Turtle.HelpMessage $ "Deployment, one of: "
+                                         <> T.intercalate ", " (lowerShowT <$> (every :: [Deployment])))
 parserDeployments :: Parser [Deployment]
 parserDeployments = (\(a, b, c, d) -> concat $ maybeToList <$> [a, b, c, d])
                     <$> ((,,,)
@@ -58,9 +73,8 @@ parserDo = (\(a, b, c, d) -> concat $ maybeToList <$> [a, b, c, d])
 --
 data Command where
 
-  -- * setup 
-  Template              :: { tNodeLimit   :: Integer
-                           , tHere        :: Bool
+  -- * setup
+  Template              :: { tHere        :: Bool
                            , tFile        :: Maybe Turtle.FilePath
                            , tEnvironment :: Environment
                            , tTarget      :: Target
@@ -81,7 +95,7 @@ data Command where
   Do                    :: [Command] -> Command
   Create                :: Command
   Modify                :: Command
-  Deploy                :: Bool -> Bool -> Command
+  Deploy                :: Bool -> Bool -> Turtle.FilePath -> Command
   Destroy               :: Command
   Delete                :: Command
   FromScratch           :: Command
@@ -104,9 +118,7 @@ centralCommandParser =
   (    subcommandGroup "General:"
     [ ("template",              "Produce (or update) a checkout of BRANCH with a configuration YAML file (whose default name depends on the ENVIRONMENT), primed for future operations.",
                                 Template
-                                <$> (fromMaybe Ops.defaultNodeLimit
-                                     <$> optional (optInteger "node-limit" 'l' "Limit cardano-node count to N"))
-                                <*> (fromMaybe False
+                                <$> (fromMaybe False
                                       <$> optional (switch "here" 'h' "Instead of cloning a subdir, operate on a config in the current directory"))
                                 <*> (optional (optPath "config" 'c' "Override the default, environment-dependent config filename"))
                                 <*> parserEnvironment
@@ -139,7 +151,9 @@ centralCommandParser =
    , ("deploy",                 "Deploy the whole cluster",
                                 Deploy
                                 <$> switch "evaluate-only" 'e' "Pass --evaluate-only to 'nixops'."
-                                <*> switch "build-only"    'b' "Pass --build-only to 'nixops'.")
+                                <*> switch "build-only"    'b' "Pass --build-only to 'nixops'."
+                                <*> (fromMaybe Ops.defaultClusterConfig
+                                     <$> optional (optPath "cluster"      't' "Cluster configuration.  Defaults to 'cluster.yaml'")))
    , ("destroy",                "Destroy the whole cluster",                                        pure Destroy)
    , ("delete",                 "Unregistr the cluster from NixOps",                                pure Delete)
    , ("fromscratch",            "Destroy, Delete, Create, Deploy",                                  pure FromScratch)
@@ -209,7 +223,7 @@ main = do
             Do cmds                  -> sequence_ $ doCommand o c <$> cmds
             Create                   -> Ops.create                    o c
             Modify                   -> Ops.modify                    o c
-            Deploy evonly buonly     -> Ops.deploy                    o c evonly buonly
+            Deploy evo buo clu       -> Ops.deploy                    o c evo buo clu
             Destroy                  -> Ops.destroy                   o c
             Delete                   -> Ops.delete                    o c
             FromScratch              -> Ops.fromscratch               o c
@@ -241,7 +255,7 @@ main = do
 
 runTemplate :: Options -> Command -> IO ()
 runTemplate o@Options{..} Template{..} = do
-  when (elem (fromBranch tBranch) $ showT <$> Ops.allDeployments) $
+  when (elem (fromBranch tBranch) $ showT <$> (every :: [Deployment])) $
     die $ format ("the branch name "%w%" ambiguously refers to a deployment.  Cannot have that!") (fromBranch tBranch)
   homeDir <- home
   let bname     = fromBranch tBranch
@@ -250,7 +264,7 @@ runTemplate o@Options{..} Template{..} = do
   case (exists, tHere) of
     (_, True) -> pure ()
     (True, _) -> echo $ "Using existing git clone ..."
-    _         -> cmd o "git" ["clone", fromURL $ projectURL Nixpkgs, "-b", bname, bname]
+    _         -> cmd o "git" ["clone", fromURL $ projectURL IOHK, "-b", bname, bname]
 
   unless tHere $ do
     cd branchDir
@@ -258,17 +272,17 @@ runTemplate o@Options{..} Template{..} = do
 
   Ops.GithubSource{..} <- Ops.readSource Ops.githubSource Nixpkgs
 
-  let config = Ops.mkConfig tBranch ghRev tEnvironment tTarget tDeployments tNodeLimit
+  let config = Ops.mkConfig tBranch ghRev tEnvironment tTarget tDeployments
   configFilename <- T.pack . Path.encodeString <$> Ops.writeConfig tFile config
 
   echo ""
   echo $ "-- " <> (unsafeTextToLine $ configFilename) <> " is:"
   cmd o "cat" [configFilename]
-runTemplate Options{..} _ = error "impossible"
+runTemplate _ _ = error "impossible"
 
 runSetRev :: Options -> Project -> Commit -> IO ()
 runSetRev o proj rev = do
-  printf ("Setting "%w%" commit to "%s%"\n") proj (fromCommit rev)
+  printf ("Setting '"%s%"' commit to "%s%"\n") (lowerShowT proj) (fromCommit rev)
   spec <- incmd o "nix-prefetch-git" ["--no-deepClone", fromURL $ projectURL proj, fromCommit rev]
   writeFile (T.unpack $ format fp $ Ops.projectSrcFile proj) $ T.unpack spec
 
@@ -277,6 +291,6 @@ runFakeKeys = do
   echo "Faking keys/key*.sk"
   testdir "keys"
     >>= flip unless (mkdir "keys")
-  forM_ (41:[1..14]) $
+  forM_ ([1..41]) $
     (\x-> do touch $ Turtle.fromText $ format ("keys/key"%d%".sk") x)
   echo "Minimum viable keyset complete."

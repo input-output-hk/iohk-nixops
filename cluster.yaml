@@ -1,0 +1,80 @@
+nodes:
+  'a1':
+    type: core
+    region: eu-central-1
+    static-routes: [[a2,c2], [a3,d1], [b1,b2], [r1, r2]]
+  'a2':
+    type: core
+    region: eu-central-1
+    static-routes: [[a1,b1], [a3,d2], [c1,c2], [r2, r1]]
+  'a3':
+    type: core
+    region: eu-central-1
+    static-routes: [[a1,b2], [a2,c1], [d1,d2]]
+
+  'b1':
+    type: core
+    region: eu-west-1
+    static-routes: [[b2,b3], [b4,a3], [a1,a2], [r3, r4]]
+  'b2':
+    type: core
+    region: eu-west-1
+    static-routes: [[b1,b4], [b3,d1], [c1,c2], [r4, r3]]
+  'b3':
+    type: core
+    region: eu-west-1
+    static-routes: [[b2,b1], [b4,a3], [d1,d2]]
+  'b4':
+    type: core
+    region: eu-west-1
+    static-routes: [[b1,b2], [b3,d1], [a3,c1]]
+
+  'c1':
+    type: core
+    region: ap-southeast-1
+    static-routes: [[c2,d1], [a1,a2], [b2,b3], [r5, r6]]
+  'c2':
+    type: core
+    region: ap-southeast-1
+    static-routes: [[c1,b2], [b4,b1], [d2,d1], [r6, r5]]
+
+  'd1':
+    type: core
+    region: ap-northeast-1
+    static-routes: [[d2,b1], [b3,b4], [a3,a2], [r7, r8]]
+  'd2':
+    type: core
+    region: ap-northeast-1
+    static-routes: [[d1,b4], [c2,c1], [b1,b3], [r8, r7]]
+
+  'r1':
+    type: relay
+    region: eu-central-1
+    static-routes: [[a1, a2], [a3, a2]]
+  'r2':
+    type: relay
+    region: eu-central-1
+
+  'r3':
+    type: relay
+    region: eu-west-1
+    static-routes: [[b1, b2], [b3, b4]]
+  'r4':
+    type: relay
+    region: eu-west-1
+
+  'r5':
+    type: relay
+    region: ap-southeast-1
+    static-routes: [[c1, c2]]
+  'r6':
+    type: relay
+    region: ap-southeast-1
+
+  'r7':
+    type: relay
+    region: ap-northeast-1
+    static-routes: [[d1, d2]]
+  'r8':
+    type: relay
+    region: ap-northeast-1

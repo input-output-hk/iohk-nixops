@@ -8,6 +8,7 @@ rec {
   # Run time settings
   bitcoinOverFlat = false;
   totalMoneyAmount = 60000000;
+  richPoorDistr = false;
   nodePort = 3000;
   enableP2P = true;
 
@@ -25,6 +26,6 @@ rec {
   #enableDelegation = true;
   delegationNode = 0;
 
-  productionMode = true;
+  productionMode = false;
   systemStart = 1499246772;
 }
