@@ -36,8 +36,6 @@ let
     "--no-ntp" # DEVOPS-160
     (optionalString cfg.stats "--stats")
     (optionalString (!cfg.productionMode) "--rebuild-db")
-    (optionalString (!cfg.productionMode) "--spending-genesis ${toString cfg.nodeIndex}")
-    (optionalString (!cfg.productionMode) "--vss-genesis ${toString cfg.nodeIndex}")
     (optionalString (cfg.distribution && !cfg.productionMode && cfg.richPoorDistr) (
        "--rich-poor-distr \"${rnpDistributionParam}\""))
     (optionalString (cfg.distribution && !cfg.productionMode && !cfg.richPoorDistr) (
