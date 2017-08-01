@@ -1,0 +1,4 @@
+nodes:
+  'lonely-node':
+    type: core
+    region: eu-central-1
