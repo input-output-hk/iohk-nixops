@@ -1,7 +1,4 @@
 args:
-  nodeLimit:
-    tag: NixInt
-    contents: 14
   accessKeyId:
     tag: NixStr
     contents: cardano-deployer

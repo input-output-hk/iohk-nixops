@@ -1,12 +1,13 @@
-{ accessKeyId, nodeLimit, ... }:
+{ accessKeyId, ... }:
 
 with (import ./../lib.nix);
 let
-  nodes = import ./cardano-nodes-config.nix { inherit nodeLimit; };
-  nodeProdConf = import ./../modules/cardano-node-prod.nix;
-in {
+  nodeArgs    = (import ./cardano-nodes-config.nix { inherit accessKeyId; }).nodeArgs;
+  nodeEnvConf = import ./../modules/cardano-node-prod.nix;
+in
+{
   resources = {
-    elasticIPs = mkNodeIPs nodes accessKeyId;
+    elasticIPs = mkNodeIPs nodeArgs accessKeyId;
     datadogMonitors = (with (import ./../modules/datadog-monitors.nix); {
       cpu = mkMonitor cpu_monitor;
       disk = mkMonitor disk_monitor;
@@ -15,4 +16,4 @@ in {
       cardano_node_process = mkMonitor cardano_node_process_monitor;
     });
   };
-} // (mkNodes nodes (i: r: nodeProdConf))
+} // (mkNodesUsing (params: nodeEnvConf) nodeArgs)

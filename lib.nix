@@ -5,23 +5,23 @@ let
   hostPkgs = import <nixpkgs> {};
   lib = hostPkgs.lib;
 in lib // (rec {
-  # Allows to also generate the key compared to upstream genAttrs
-  genAttrs' = names: fkey: fname:
-    lib.listToAttrs (map (n: lib.nameValuePair (fkey n) (fname n)) names);
-
-  # Given a list of integers and a function,
-  # generate an attribute set with that many nodes and call the function with node index
-  genNodes = nodeLimit: ids: f:
-             genAttrs' (lib.flip builtins.filter ids
-                          (id: id < nodeLimit))
-                       (i: "node${toString i}") f;
-
   # TODO: sanity check there's no duplicate nodes for same index
   # https://github.com/NixOS/nixops/blob/e2015bbfcbcf7594824755e39f838d7aab258b6e/nix/eval-machine-info.nix#L173
-  mergeNodes = mergeAttrs;
   mergeAttrs = nodes: lib.foldAttrs (a: b: a) [] nodes;
 
-  mkNodes = nodes: config: lib.mapAttrs (name: value: config value.i value.region) nodes;
+  cardanoByName= x: nodes: let xs = builtins.filter (n: n.config.services.cardano-node.enable == true
+                                     && n.config.services.cardano-node.nodeName == x) nodes;
+                           in if xs != [] then (builtins.elemAt xs 0).config.services.cardano-node
+                              else throw "nodeById: no node with name '${toString x}'";
+  nodeCardano  = n: if !(builtins.hasAttr "cardano-node" n.config.services)
+                    then throw "nodeAttr: node has no 'cardano-node' service configured."
+                    else n.config.services.cardano-node;
+  cardanoAttr  = a: c:
+                    if !builtins.hasAttr a c || c."${a}" == null
+                    then throw "nodeAttr: cardano node has no attribute '${a}'."
+                    else c."${a}";
+
+  mkNodesUsing = constructor: nodes: lib.mapAttrs  (name: nodeParams: constructor nodeParams) nodes;
   mkNodeIPs = nodes: accessKeyId: lib.mapAttrs' (name: value:
       { name = "nodeip${toString value.i}";
         value = { inherit (value) region; inherit accessKeyId;};
@@ -33,6 +33,10 @@ in lib // (rec {
   fetchNixPkgs = if builtins.getEnv "NIX_PATH_LOCKED" == "1"
     then builtins.trace "using host nixpkgs" <nixpkgs>
     else builtins.trace "fetching nixpkgs"   fetchNixpkgsWithNixpkgs hostPkgs;
+
+  traceF   = f: x: builtins.trace                         (f x)  x;
+  traceSF  = f: x: builtins.trace (builtins.seq     (f x) (f x)) x;
+  traceDSF = f: x: builtins.trace (builtins.deepSeq (f x) (f x)) x;
 
   # Parse peers from a file
   #

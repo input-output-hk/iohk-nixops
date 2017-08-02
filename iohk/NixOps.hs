@@ -21,6 +21,7 @@ import qualified Data.ByteString.UTF8          as BUTF8
 import Data.Char (ord)
 import qualified Data.Yaml                     as YAML
 import Data.Yaml (FromJSON(..), ToJSON(..))
+import           Data.Either
 import           Data.Maybe
 import qualified Data.Map                      as Map
 import Data.Monoid ((<>))
@@ -50,7 +51,7 @@ awsPublicIPURL = "http://169.254.169.254/latest/meta-data/public-ipv4"
 
 defaultEnvironment   = Development
 defaultTarget        = AWS
-defaultNodeLimit     = 14
+defaultNode          = NodeName "node0"
 
 
 -- * Projects
@@ -93,6 +94,12 @@ newtype NixAttr   = NixAttr   { fromAttr    :: Text } deriving (FromJSON, Generi
 newtype NixopsCmd = NixopsCmd { fromCmd     :: Text } deriving (FromJSON, Generic, Show, IsString)
 newtype Region    = Region    { fromRegion  :: Text } deriving (FromJSON, Generic, Show, IsString)
 newtype URL       = URL       { fromURL     :: Text } deriving (FromJSON, Generic, Show, IsString, ToJSON)
+
+
+-- * Some orphan instances..
+--
+instance FromJSON FilePath where parseJSON = AE.withText "filepath" $ \v -> pure $ fromText v
+instance ToJSON   FilePath where toJSON (toText -> Right v) = AE.String $ v
 
 
 -- * A bit of Nix types
@@ -192,14 +199,16 @@ selectDeployer Staging delts | elem Nodes delts = "iohk"
                              | otherwise        = "cardano-deployer"
 selectDeployer _ _                              = "cardano-deployer"
 
+selectClusterConfig :: Environment -> [Deployment] -> FilePath
+selectClusterConfig Development _ = "cluster-development.yaml"
+selectClusterConfig _           _ = "cluster.yaml"
+
 type DeplArgs = Map.Map NixParam NixValue
 
-selectDeploymentArgs :: Environment -> [Deployment] -> Integer -> DeplArgs
-selectDeploymentArgs env delts limit = Map.fromList
+selectDeploymentArgs :: Environment -> [Deployment] -> DeplArgs
+selectDeploymentArgs env delts = Map.fromList
   [ ("accessKeyId"
-    , NixStr . fromNodeName $ selectDeployer env delts)
-  , ("nodeLimit"
-    , NixInt limit ) ]
+    , NixStr . fromNodeName $ selectDeployer env delts) ]
 
 
 -- * Deployment structure
@@ -216,6 +225,7 @@ deployments =
       , (Any,         AWS, "deployments/cardano-explorer-target-aws.nix") ])
   , (Nodes
     , [ (Any,         All, "deployments/cardano-nodes.nix")
+      , (Development, All, "deployments/cardano-nodes-env-development.nix")
       , (Production,  All, "deployments/cardano-nodes-env-production.nix")
       , (Staging,     All, "deployments/cardano-nodes-env-staging.nix")
       , (Any,         AWS, "deployments/cardano-nodes-target-aws.nix") ])
@@ -284,7 +294,9 @@ nixopsCmdOptions Options{..} NixopsConfig{..} =
 
 data NixopsConfig = NixopsConfig
   { cName             :: Text
+  , cNixops           :: Maybe FilePath
   , cNixpkgsCommit    :: Commit
+  , cCluster          :: FilePath
   , cEnvironment      :: Environment
   , cTarget           :: Target
   , cElements         :: [Deployment]
@@ -294,7 +306,9 @@ data NixopsConfig = NixopsConfig
 instance FromJSON NixopsConfig where
     parseJSON = AE.withObject "NixopsConfig" $ \v -> NixopsConfig
         <$> v .: "name"
+        <*> v .: "nixops"
         <*> v .: "nixpkgs"
+        <*> v .: "cluster"
         <*> v .: "environment"
         <*> v .: "target"
         <*> v .: "elements"
@@ -306,7 +320,9 @@ instance ToJSON Deployment
 instance ToJSON NixopsConfig where
   toJSON NixopsConfig{..} = AE.object
    [ "name"        .= cName
+   , "nixops"      .= cNixops
    , "nixpkgs"     .= fromCommit cNixpkgsCommit
+   , "cluster"     .= cCluster
    , "environment" .= showT cEnvironment
    , "target"      .= showT cTarget
    , "elements"    .= cElements
@@ -315,14 +331,17 @@ instance ToJSON NixopsConfig where
 
 deploymentFiles :: Environment -> Target -> [Deployment] -> [Text]
 deploymentFiles cEnvironment cTarget cElements =
+  "deployments/firewalls.nix":
   "deployments/keypairs.nix":
   concat (elementDeploymentFiles cEnvironment cTarget <$> cElements)
 
 -- | Interpret inputs into a NixopsConfig
-mkConfig :: Branch -> Commit -> Environment -> Target -> [Deployment] -> Integer -> NixopsConfig
-mkConfig (Branch cName) cNixpkgsCommit cEnvironment cTarget cElements nodeLimit =
-  let cFiles    = deploymentFiles cEnvironment cTarget cElements
-      cDeplArgs = selectDeploymentArgs cEnvironment cElements nodeLimit
+mkConfig :: Branch -> Maybe FilePath -> Maybe FilePath -> Commit -> Environment -> Target -> [Deployment] -> NixopsConfig
+mkConfig (Branch cName) cNixops mCluster cNixpkgsCommit cEnvironment cTarget cElements =
+  let cFiles    = deploymentFiles              cEnvironment cTarget cElements
+      cDeplArgs = selectDeploymentArgs         cEnvironment         cElements
+      cCluster  = flip fromMaybe mCluster $
+                  selectClusterConfig cEnvironment cElements
   in NixopsConfig{..}
 
 -- | Write the config file
@@ -387,11 +406,18 @@ incmd Options{..} cmd args = do
   when oVerbose $ logCmd cmd args
   inprocs cmd args empty
 
+
+-- * Invoking nixops
+--
+nixopsPath :: NixopsConfig -> FilePath
+nixopsPath (cNixops -> Nothing) = "nixops"
+nixopsPath (cNixops -> Just x)  = x
+
 nixops  :: Options -> NixopsConfig -> NixopsCmd -> [Text] -> IO ()
 nixops' :: Options -> NixopsConfig -> NixopsCmd -> [Text] -> IO (ExitCode, Text)
 
-nixops  o c (NixopsCmd com) args = cmd  o "nixops" (com : nixopsCmdOptions o c <> args)
-nixops' o c (NixopsCmd com) args = cmd' o "nixops" (com : nixopsCmdOptions o c <> args)
+nixops  o c (NixopsCmd com) args = cmd  o (format fp $ nixopsPath c) (com : nixopsCmdOptions o c <> args)
+nixops' o c (NixopsCmd com) args = cmd' o (format fp $ nixopsPath c) (com : nixopsCmdOptions o c <> args)
 
 
 -- * Deployment lifecycle
@@ -422,6 +448,12 @@ deploy o c@NixopsConfig{..} evonly buonly = do
      keyExists <- testfile "keys/key1.sk"
      unless keyExists $
        die "Deploying nodes, but 'keys/key1.sk' is absent."
+
+  printf ("Generating 'cluster.nix' from '"%fp%"'..\n") cCluster
+  exists <- testpath cCluster
+  unless exists $
+    die $ format ("Cluster config '"%fp%"' doesn't exist.") cCluster
+  inproc "yaml2json" [format fp cCluster] empty & output "cluster.nix"
 
   printf ("Deploying cluster "%s%"\n") cName
   export "NIX_PATH_LOCKED" "1"

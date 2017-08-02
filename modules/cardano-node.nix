@@ -19,7 +19,8 @@ let
   #
   # > genPeers ["ip:port/dht" "ip:port/dht" ...]
   # "--kademlia-peer ip:port/dht --peer ip:port/dht ..."
-  genPeers = peers: toString (map (p: "--kademlia-peer " + p) peers);
+  genInitialKademliaPeers = peers: toString (map (p: "--kademlia-peer " + p) peers);
+  genNeighbours           = peers: toString (map (p: "--neighbour " + p.name + ":" + p.ip) peers);
 
   command = toString [
     cfg.executable
@@ -35,8 +36,6 @@ let
     "--no-ntp" # DEVOPS-160
     (optionalString cfg.stats "--stats")
     (optionalString (!cfg.productionMode) "--rebuild-db")
-    (optionalString (!cfg.productionMode) "--spending-genesis ${toString cfg.nodeIndex}")
-    (optionalString (!cfg.productionMode) "--vss-genesis ${toString cfg.nodeIndex}")
     (optionalString (cfg.distribution && !cfg.productionMode && cfg.richPoorDistr) (
        "--rich-poor-distr \"${rnpDistributionParam}\""))
     (optionalString (cfg.distribution && !cfg.productionMode && !cfg.richPoorDistr) (
@@ -52,7 +51,9 @@ let
     "--log-config ${./../static/csl-logging.yaml}"
     "--logs-prefix /var/lib/cardano-node"
     (optionalString (!cfg.enableP2P) "--kademlia-explicit-initial --disable-propagation ${smartGenPeer}")
-    (genPeers cfg.initialKademliaPeers)
+    "--cluster /run/keys/cluster.yaml"
+    "--node-id ${cfg.nodeName}"
+    (genNeighbours  cfg.neighbours)
   ];
 in {
   options = {
@@ -60,6 +61,8 @@ in {
       enable = mkEnableOption name;
       port = mkOption { type = types.int; default = 3000; };
       systemStart = mkOption { type = types.int; default = 0; };
+
+      type      = mkOption { type = types.enum [ "core" "relay" "other" ]; default = null; };
 
       enableP2P = mkOption { type = types.bool; default = false; };
       supporter = mkOption { type = types.bool; default = false; };
@@ -137,6 +140,12 @@ in {
         description = "Private IP to bind to";
         default = "0.0.0.0";
       };
+
+      neighbours = mkOption {
+        default = [];
+        # type = types.list;
+        description = ''List of name:ip pairs of neighbours.'';
+      };
     };
   };
 
@@ -144,6 +153,8 @@ in {
     assertions = [
     { assertion = cfg.initialKademliaPeers != null;
       message = "services.cardano-node.initialKademliaPeers must be set, even if to an empty list (nodeIndex: ${toString cfg.nodeIndex})"; }
+    { assertion = cfg.type != null;
+      message = "services.cardano-node.type must be set to one of: core relay other"; }
     ];
 
     users = {

@@ -1,9 +1,9 @@
-{ nodeLimit, ... }:
+{ accessKeyId, ... }:
 
 with (import ./../lib.nix);
 let
+  nodeArgs   = (import ./cardano-nodes-config.nix { inherit accessKeyId; }).nodeArgs;
   nodeConfig = import ./../modules/cardano-node-config.nix;
-  nodes = import ./cardano-nodes-config.nix { inherit nodeLimit; };
 in {
   network.description = "Cardano SL";
-} // (mkNodes nodes nodeConfig)
+} // (mkNodesUsing nodeConfig nodeArgs)

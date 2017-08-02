@@ -74,9 +74,10 @@ parserDo = (\(a, b, c, d) -> concat $ maybeToList <$> [a, b, c, d])
 data Command where
 
   -- * setup
-  Template              :: { tNodeLimit   :: Integer
-                           , tHere        :: Bool
+  Template              :: { tHere        :: Bool
                            , tFile        :: Maybe Turtle.FilePath
+                           , tNixops      :: Maybe Turtle.FilePath
+                           , tCluster     :: Maybe Turtle.FilePath
                            , tEnvironment :: Environment
                            , tTarget      :: Target
                            , tBranch      :: Branch
@@ -119,11 +120,11 @@ centralCommandParser =
   (    subcommandGroup "General:"
     [ ("template",              "Produce (or update) a checkout of BRANCH with a configuration YAML file (whose default name depends on the ENVIRONMENT), primed for future operations.",
                                 Template
-                                <$> (fromMaybe Ops.defaultNodeLimit
-                                     <$> optional (optInteger "node-limit" 'l' "Limit cardano-node count to N"))
-                                <*> (fromMaybe False
+                                <$> (fromMaybe False
                                       <$> optional (switch "here" 'h' "Instead of cloning a subdir, operate on a config in the current directory"))
-                                <*> (optional (optPath "config" 'c' "Override the default, environment-dependent config filename"))
+                                <*> optional (optPath "config"    'c' "Override the default, environment-dependent config filename")
+                                <*> optional (optPath "nixops"    'n' "Use a specific Nixops binary for this cluster")
+                                <*> optional (optPath "cluster"   't' "Cluster configuration.  Defaults to 'cluster.yaml'")
                                 <*> parserEnvironment
                                 <*> parserTarget
                                 <*> parserBranch "iohk-nixops branch to check out"
@@ -224,7 +225,7 @@ main = do
             Do cmds                  -> sequence_ $ doCommand o c <$> cmds
             Create                   -> Ops.create                    o c
             Modify                   -> Ops.modify                    o c
-            Deploy evonly buonly     -> Ops.deploy                    o c evonly buonly
+            Deploy evo buo           -> Ops.deploy                    o c evo buo
             Destroy                  -> Ops.destroy                   o c
             Delete                   -> Ops.delete                    o c
             FromScratch              -> Ops.fromscratch               o c
@@ -273,13 +274,13 @@ runTemplate o@Options{..} Template{..} = do
 
   Ops.GithubSource{..} <- Ops.readSource Ops.githubSource Nixpkgs
 
-  let config = Ops.mkConfig tBranch ghRev tEnvironment tTarget tDeployments tNodeLimit
+  let config = Ops.mkConfig tBranch tNixops tCluster ghRev tEnvironment tTarget tDeployments
   configFilename <- T.pack . Path.encodeString <$> Ops.writeConfig tFile config
 
   echo ""
   echo $ "-- " <> (unsafeTextToLine $ configFilename) <> " is:"
   cmd o "cat" [configFilename]
-runTemplate Options{..} _ = error "impossible"
+runTemplate _ _ = error "impossible"
 
 runSetRev :: Options -> Project -> Commit -> IO ()
 runSetRev o proj rev = do
@@ -292,6 +293,6 @@ runFakeKeys = do
   echo "Faking keys/key*.sk"
   testdir "keys"
     >>= flip unless (mkdir "keys")
-  forM_ (41:[1..14]) $
+  forM_ ([1..41]) $
     (\x-> do touch $ Turtle.fromText $ format ("keys/key"%d%".sk") x)
   echo "Minimum viable keyset complete."
