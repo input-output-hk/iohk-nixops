@@ -2787,11 +2787,16 @@ self: {
           description = "Fast, pure and practical SHA-1 implementation";
           license = stdenv.lib.licenses.bsd3;
         }) {};
-      cryptonite = callPackage ({ base, bytestring, criterion, deepseq, foundation, ghc-prim, integer-gmp, memory, mkDerivation, random, stdenv, tasty, tasty-hunit, tasty-kat, tasty-quickcheck }:
+      cryptonite = callPackage ({ base, bytestring, criterion, deepseq, foundation, ghc-prim, integer-gmp, memory, mkDerivation, random, stdenv, tasty, tasty-hunit, tasty-kat, tasty-quickcheck, fetchgit }:
       mkDerivation {
           pname = "cryptonite";
-          version = "0.23";
+          version = "0.24";
           sha256 = "1680dxgmnjgj083jhsw3rlljwaw0zqi5099m59x6kwqkxhn1qjpf";
+          src = fetchgit {
+            url = "https://github.com/domenkozar/cryptonite.git";
+            sha256 = "08szhg4mxamqbv6j5x6ssvja306dg2xfv410rsn3zs1y2mq6k5an";
+            rev = "e7c6dcd107fcb43093faa18d7dcfee8cf5538bff";
+          };
           libraryHaskellDepends = [
             base
             bytestring

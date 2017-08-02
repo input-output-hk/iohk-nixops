@@ -24,6 +24,7 @@ let
       doHaddock = false;
       patchPhase = ''
        export CSL_SYSTEM_TAG=linux64
+       sed -i 's/>= 0.23 && <= 0.23/== 0.24/' cardano-sl.cabal
       '';
       # production full nodes shouldn't use wallet as it means different constants
       configureFlags = [
@@ -41,10 +42,6 @@ let
 
     # TODO: https://github.com/input-output-hk/stack2nix/issues/7
     ether = addConfigureFlags ["-fdisable-tup-instances"] super.ether;
-
-    # Gold linker fixes
-    cryptonite = addConfigureFlags ["--ghc-option=-optl-pthread"] super.cryptonite;
-
 
     # sl-explorer
     # TODO: https://issues.serokell.io/issue/CSM-195
