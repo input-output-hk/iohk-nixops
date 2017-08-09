@@ -14,7 +14,7 @@ nodes:
   'c1':
     type: core
     region: ap-southeast-1
-    static-routes: [["a1","b1"]]
+    static-routes: [["a1","b1"], ["r3"]]
     addr: c1.cardano
     port: 3000
 
