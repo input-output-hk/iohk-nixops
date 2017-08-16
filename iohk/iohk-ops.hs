@@ -3,6 +3,7 @@
 {-# OPTIONS_GHC -Wall -Wno-name-shadowing -Wno-missing-signatures -Wno-type-defaults #-}
 
 import           Control.Monad                    (forM_)
+import qualified Data.Aeson                    as AE
 import           Data.Char                        (toLower)
 import           Data.List
 import qualified Data.Map                      as Map
@@ -14,7 +15,7 @@ import qualified Filesystem.Path.CurrentOS     as Path
 import           Turtle                    hiding (procs, shells)
 
 import           NixOps                           (Branch(..), Commit(..), Environment(..), Deployment(..), Target(..)
-                                                  ,Options(..), NixopsCmd(..), Project(..), Region(..), URL(..)
+                                                  ,Options(..), NixopsCmd(..), Project(..), Region(..), URL(..), NixSource(..)
                                                   ,showT, lowerShowT, errorT, cmd, incmd, projectURL, every)
 import qualified NixOps                        as Ops
 import qualified CardanoCSL                    as Cardano
@@ -282,7 +283,14 @@ runTemplate o@Options{..} Template{..} = do
 runTemplate Options{..} _ = error "impossible"
 
 runSetRev :: Options -> Project -> Commit -> IO ()
-runSetRev o proj rev = do
+runSetRev o Nixpkgs newRev = do
+  oldGHSrc@Ops.GithubSource{..} <- Ops.readSource Ops.githubSource Nixpkgs
+  printf ("Changing nixpkgs commit from "%s%" to "%s%"\n") (fromCommit ghRev) (fromCommit newRev)
+  newSha256 <- incmd o "nix-prefetch-url" ["--unpack", fromURL $ Ops.nixpkgsRevTarball newRev]
+  let newGHSrc = oldGHSrc { ghRev = newRev, ghSha256 = Ops.NixHash $ T.strip newSha256 }
+  Ops.writeSource AE.encode newGHSrc Nixpkgs
+
+runSetRev o proj rev    = do
   printf ("Setting '"%s%"' commit to "%s%"\n") (lowerShowT proj) (fromCommit rev)
   spec <- incmd o "nix-prefetch-git" ["--no-deepClone", fromURL $ projectURL proj, fromCommit rev]
   writeFile (T.unpack $ format fp $ Ops.projectSrcFile proj) $ T.unpack spec
