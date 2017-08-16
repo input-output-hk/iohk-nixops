@@ -238,6 +238,7 @@ selectDeployer _ _                              = "cardano-deployer"
 
 selectTopologyConfig :: Environment -> [Deployment] -> FilePath
 selectTopologyConfig Development _ = "topology-development.yaml"
+selectTopologyConfig Staging     _ = "topology-staging.yaml"
 selectTopologyConfig _           _ = "topology.yaml"
 
 type DeplArgs = Map.Map NixParam NixValue
