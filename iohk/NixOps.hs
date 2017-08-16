@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -Wall -Wno-orphans -Wno-missing-signatures -Wno-unticked-promoted-constructors -Wno-type-defaults #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,7 +22,7 @@ import           Data.Aeson                       ((.:), (.=))
 import qualified Data.Aeson.Types              as AE
 import           Data.Aeson.Encode.Pretty         (encodePretty)
 import qualified Data.ByteString.Lazy          as BL
-import           Data.ByteString.Lazy.Char8       (ByteString, pack)
+import           Data.ByteString.Lazy.Char8       (ByteString)
 import qualified Data.ByteString.UTF8          as BU
 import qualified Data.ByteString.Lazy.UTF8     as LBU
 import           Data.Char                        (ord, toLower)
@@ -32,7 +33,6 @@ import           Data.List                        (sort)
 import           Data.Maybe
 import qualified Data.Map                      as Map
 import           Data.Monoid                      ((<>))
-import           Data.Optional (Optional)
 import qualified Data.Set                      as Set
 import qualified Data.Text                     as T
 import qualified Data.Text.IO                  as TIO
@@ -42,15 +42,13 @@ import qualified Data.Vector                   as V
 import qualified Data.Yaml                     as YAML
 import           Data.Yaml                        (FromJSON(..), ToJSON(..))
 import qualified Filesystem.Path.CurrentOS     as Path
-import           GHC.Generics
-import qualified Network.DNS                   as DNS
+import           GHC.Generics              hiding (from, to)
 import           Prelude                   hiding (FilePath)
 import           Safe                             (headMay)
 import qualified System.IO                     as Sys
-import           Text.Read                        (readMaybe)
 import           Time.System
 import           Time.Types
-import           Turtle                    hiding (fold, inproc, procs, o)
+import           Turtle                    hiding (env, err, fold, inproc, prefix, procs, e, f, o, x)
 import qualified Turtle                        as Turtle
 
 
@@ -126,7 +124,9 @@ fromNodeName (NodeName x) = x
 -- * Some orphan instances..
 --
 instance FromJSON FilePath where parseJSON = AE.withText "filepath" $ \v -> pure $ fromText v
-instance ToJSON   FilePath where toJSON (toText -> Right v) = AE.String $ v
+instance ToJSON   FilePath where toJSON    = AE.String . format fp
+deriving instance Generic Seconds
+instance FromJSON Seconds
 
 
 -- * A bit of Nix types
@@ -194,10 +194,10 @@ nixValueStr (NixFile f)    = let txt = format fp f
                                 then txt else ("./" <> txt)
 
 nixArgCmdline :: NixParam -> NixValue -> [Text]
-nixArgCmdline (NixParam name) x@(NixBool bool) = ["--arg",    name, nixValueStr x]
-nixArgCmdline (NixParam name) x@(NixInt  int)  = ["--arg",    name, nixValueStr x]
-nixArgCmdline (NixParam name) x@(NixStr  str)  = ["--argstr", name, nixValueStr x]
-nixArgCmdline (NixParam name) x@(NixFile f)    = ["--arg",    name, nixValueStr x]
+nixArgCmdline (NixParam name) x@(NixBool _) = ["--arg",    name, nixValueStr x]
+nixArgCmdline (NixParam name) x@(NixInt  _) = ["--arg",    name, nixValueStr x]
+nixArgCmdline (NixParam name) x@(NixStr  _) = ["--argstr", name, nixValueStr x]
+nixArgCmdline (NixParam name) x@(NixFile _) = ["--arg",    name, nixValueStr x]
 
 
 -- * Domain
@@ -246,7 +246,7 @@ deployerIP :: Options -> IO IP
 deployerIP o = IP <$> incmd o "curl" ["--silent", fromURL awsPublicIPURL]
 
 selectDeploymentArgs :: Options -> FilePath -> Environment -> [Deployment] -> IO DeplArgs
-selectDeploymentArgs o cTopology env delts = do
+selectDeploymentArgs o _ env delts = do
     let staticArgs = [ ("accessKeyId"
                        , NixStr . fromNodeName $ selectDeployer env delts) ]
     (IP deployerIp) <- deployerIP o
@@ -299,8 +299,8 @@ summariseTopology (TopologyStatic (AllStaticallyKnownPeers nodeMap)) =
   where simplifier node (NodeMetadata snType snRegion (NodeRoutes outRoutes) nmAddr snKademlia) =
           SimpleNode{..}
           where (mPort,  fqdn)   = case nmAddr of
-                                     (NodeAddrExact fqdn  mPort) -> (mPort, fqdn) -- (Ok, bizarrely, this contains FQDNs, even if, well.. : -)
-                                     (NodeAddrDNS   mFqdn mPort) -> (mPort, flip fromMaybe mFqdn
+                                     (NodeAddrExact fqdn'  mPort') -> (mPort', fqdn') -- (Ok, bizarrely, this contains FQDNs, even if, well.. : -)
+                                     (NodeAddrDNS   mFqdn  mPort') -> (mPort', flip fromMaybe mFqdn
                                                                       $ error "Cannot deploy a topology with nodes lacking a FQDN address.")
                 (snPort, snFQDN) = (,) (fromMaybe defaultNodePort $ PortNo . fromIntegral <$> mPort)
                                    $ (FQDN . T.pack . BU.toString) $ fqdn
@@ -309,6 +309,7 @@ summariseTopology (TopologyStatic (AllStaticallyKnownPeers nodeMap)) =
                             | (other, (NodeMetadata _ _ (NodeRoutes routes) _ _)) <- Map.toList nodeMap
                             , elem node (concat routes) ]
                             <> concat outRoutes
+summariseTopology x = errorT $ format ("Unsupported topology type: "%w) x
 
 dumpTopologyNix :: FilePath -> IO ()
 dumpTopologyNix topo = sh $ do
@@ -474,9 +475,9 @@ readConfig cf = do
   cfParse <- liftIO $ YAML.decodeFileEither $ Path.encodeString $ cf
   let c@NixopsConfig{..}
         = case cfParse of
-            Right c -> c
+            Right cfg -> cfg
             -- TODO: catch and suggest versioning
-            Left  e -> error $ T.unpack $ format ("Failed to parse config file "%fp%": "%s)
+            Left  e -> errorT $ format ("Failed to parse config file "%fp%": "%s)
                        cf (T.pack $ YAML.prettyPrintParseException e)
       storedFileSet  = Set.fromList cFiles
       deducedFiles   = deploymentFiles cEnvironment cTarget cElements
@@ -493,42 +494,41 @@ parallelIO Options{..} =
   then sequence_
   else sh . parallel
 
-logCmd  cmd args = do
-  printf ("-- "%s%"\n") $ T.intercalate " " $ cmd:args
+logCmd  bin args = do
+  printf ("-- "%s%"\n") $ T.intercalate " " $ bin:args
   Sys.hFlush Sys.stdout
 
 inproc :: Text -> [Text] -> Shell Line -> Shell Line
-inproc cmd args input = do
-  liftIO $ logCmd cmd args
-  Turtle.inproc cmd args input
+inproc bin args inp = do
+  liftIO $ logCmd bin args
+  Turtle.inproc bin args inp
 
 inprocs :: MonadIO m => Text -> [Text] -> Shell Line -> m Text
-inprocs cmd args input = do
-  (exitCode, stdout) <- liftIO $ procStrict cmd args input
+inprocs bin args inp = do
+  (exitCode, out) <- liftIO $ procStrict bin args inp
   unless (exitCode == ExitSuccess) $
-    liftIO (throwIO (ProcFailed cmd args exitCode))
-  pure stdout
+    liftIO (throwIO (ProcFailed bin args exitCode))
+  pure out
 
 cmd   :: Options -> Text -> [Text] -> IO ()
 cmd'  :: Options -> Text -> [Text] -> IO (ExitCode, Text)
 incmd :: Options -> Text -> [Text] -> IO Text
 
-cmd   Options{..} cmd args = do
-  when oVerbose $ logCmd cmd args
-  Turtle.procs      cmd args empty
-cmd'  Options{..} cmd args = do
-  when oVerbose $ logCmd cmd args
-  Turtle.procStrict cmd args empty
-incmd Options{..} cmd args = do
-  when oVerbose $ logCmd cmd args
-  inprocs cmd args empty
+cmd   Options{..} bin args = do
+  when oVerbose $ logCmd bin args
+  Turtle.procs      bin args empty
+cmd'  Options{..} bin args = do
+  when oVerbose $ logCmd bin args
+  Turtle.procStrict bin args empty
+incmd Options{..} bin args = do
+  when oVerbose $ logCmd bin args
+  inprocs bin args empty
 
 
 -- * Invoking nixops
 --
 nixopsPath :: NixopsConfig -> FilePath
-nixopsPath (cNixops -> Nothing) = "nixops"
-nixopsPath (cNixops -> Just x)  = x
+nixopsPath = fromMaybe "nixops" . cNixops
 
 nixops  :: Options -> NixopsConfig -> NixopsCmd -> [Text] -> IO ()
 nixops' :: Options -> NixopsConfig -> NixopsCmd -> [Text] -> IO (ExitCode, Text)
@@ -567,8 +567,8 @@ modify o@Options{..} c@NixopsConfig{..} = do
   nixops o c "set-args" $ concat $ uncurry nixArgCmdline <$> deplArgs
 
   printf ("Generating 'topology.nix' from '"%fp%"'..\n") cTopology
-  exists <- testpath cTopology
-  unless exists $
+  preExisting <- testpath cTopology
+  unless preExisting $
     die $ format ("Topology config '"%fp%"' doesn't exist.") cTopology
   simpleTopo <- summariseTopology <$> readTopology cTopology
   liftIO . writeTextFile "topology.nix" . T.pack . LBU.toString $ encodePretty simpleTopo
@@ -629,12 +629,12 @@ fromscratch o c = do
 -- * Building
 --
 generateGenesis :: Options -> NixopsConfig -> IO ()
-generateGenesis o c = do
+generateGenesis o _c = do
   let cardanoSLDir         = "cardano-sl"
   GitSource{..} <- readSource gitSource CardanoSL
   printf ("Generating genesis using cardano-sl commit "%s%"\n") $ fromCommit gRev
-  exists <- testpath cardanoSLDir
-  unless exists $
+  preExisting <- testpath cardanoSLDir
+  unless preExisting $
     cmd o "git" ["clone", fromURL $ projectURL CardanoSL, "cardano-sl"]
   cd "cardano-sl"
   cmd o "git" ["fetch"]
@@ -653,9 +653,9 @@ deploymentBuildTarget Nodes = "cardano-sl-static"
 deploymentBuildTarget x     = error $ "'deploymentBuildTarget' has no idea what to build for " <> show x
 
 build :: Options -> NixopsConfig -> Deployment -> IO ()
-build o c d = do
+build o _c depl = do
   echo "Building derivation..."
-  cmd o "nix-build" ["--max-jobs", "4", "--cores", "2", "-A", fromAttr $ deploymentBuildTarget d]
+  cmd o "nix-build" ["--max-jobs", "4", "--cores", "2", "-A", fromAttr $ deploymentBuildTarget depl]
 
 
 -- * State management
@@ -679,24 +679,24 @@ ssh  :: Options -> NixopsConfig -> [Text] -> NodeName -> IO ()
 ssh o c = ssh' o c $ const $ return ()
 
 ssh' :: Options -> NixopsConfig -> (Text -> IO ()) -> [Text] -> NodeName -> IO ()
-ssh' o c f cmd (fromNodeName -> node) = do
-  let cmd' = node: "--": cmd
-  (exitcode, output) <- nixops' o c "ssh" cmd'
-  f output
+ssh' o c f bin (fromNodeName -> node) = do
+  let bin' = node: "--": bin
+  (exitcode, out) <- nixops' o c "ssh" bin'
+  f out
   case exitcode of
     ExitSuccess -> return ()
-    ExitFailure code -> TIO.putStrLn $ "ssh cmd '" <> (T.intercalate " " cmd') <> "' to '" <> node <> "' failed with " <> showT code
+    ExitFailure code -> TIO.putStrLn $ "ssh cmd '" <> (T.intercalate " " bin') <> "' to '" <> node <> "' failed with " <> showT code
 
 scpFromNode :: Options -> NixopsConfig -> NodeName -> Text -> Text -> IO ()
 scpFromNode o c (fromNodeName -> node) from to = do
-  (exitcode, output) <- nixops' o c "scp" ["--from", node, from, to]
+  (exitcode, _) <- nixops' o c "scp" ["--from", node, from, to]
   case exitcode of
     ExitSuccess -> return ()
     ExitFailure code -> TIO.putStrLn $ "scp from " <> node <> " failed with " <> showT code
 
 sshForEach :: Options -> NixopsConfig -> [Text] -> IO ()
-sshForEach o c cmd =
-  nixops o c "ssh-for-each" ("--": cmd)
+sshForEach o c command =
+  nixops o c "ssh-for-each" ("--": command)
 
 deployed'commit :: Options -> NixopsConfig -> NodeName -> IO ()
 deployed'commit o c m = do
