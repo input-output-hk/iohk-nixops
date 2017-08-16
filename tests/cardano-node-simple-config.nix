@@ -6,6 +6,6 @@
              type = "core";
             peers = [];
            relays = [];
-         sg-names = [];
+          sgNames = [];
   };
 }

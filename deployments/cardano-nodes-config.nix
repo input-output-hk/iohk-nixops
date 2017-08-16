@@ -15,7 +15,7 @@ let topologySpec  = (builtins.fromJSON (builtins.readFile topologyFile));
                                 i = n - 1;
                              name = x.name; # This is an important identity, let's not break it.
                                     ## For the SG definitions look below in this file:
-                         sg-names = if      spec.type == "core"  then
+                          sgNames = if      spec.type == "core"  then
                                       [ "allow-deployer-ssh-${region}"
                                         "allow-cardano-static-peers-${name}-${region}" ]
                                     else if spec.type == "relay" then

@@ -11,7 +11,7 @@ params:
       nodeNameToPublicIP   = name: cardanoAttr "publicIP" nodes.${name}.config.services.cardano-node;
 
       sgByName = x: resources.ec2SecurityGroups.${x};
-      sgs      = map sgByName params.sg-names;
+      sgs      = map sgByName params.sgNames;
     in  {
       imports = [
         ./amazon-base.nix

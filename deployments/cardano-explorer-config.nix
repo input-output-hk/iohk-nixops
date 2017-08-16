@@ -6,7 +6,7 @@
              type = "explorer";
             peers = [];
            relays = [];
-         sg-names = [ "allow-deployer-ssh-${region}"
+          sgNames = [ "allow-deployer-ssh-${region}"
                       "allow-to-explorer-${region}" ];
   };
 }
