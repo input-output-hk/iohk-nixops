@@ -1,5 +1,6 @@
 { accessKeyId, deployerIP
 , topologyFile ? ./../topology.nix
+, systemStart
 , ... }:
 
 with (import ./../lib.nix);
@@ -15,6 +16,7 @@ let topologySpec  = (builtins.fromJSON (builtins.readFile topologyFile));
                                 i = n - 1;
                              name = x.name; # This is an important identity, let's not break it.
                                     ## For the SG definitions look below in this file:
+                      systemStart = systemStart;
                           sgNames = if      spec.type == "core"  then
                                       [ "allow-deployer-ssh-${region}"
                                         "allow-cardano-static-peers-${name}-${region}" ]

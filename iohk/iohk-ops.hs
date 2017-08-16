@@ -13,6 +13,7 @@ import qualified Data.Text                     as T
 import qualified Filesystem.Path.CurrentOS     as Path
 import           Turtle                    hiding (procs, shells)
 import           Time.Types
+import           Time.System
 
 
 import           NixOps                           (Branch(..), Commit(..), Environment(..), Deployment(..), Target(..)
@@ -105,7 +106,7 @@ data Command where
   Do                    :: [Command] -> Command
   Create                :: Command
   Modify                :: Command
-  Deploy                :: Bool -> Bool -> Bool -> Bool -> Seconds -> Command
+  Deploy                :: Bool -> Bool -> Bool -> Maybe Seconds -> Command
   Destroy               :: Command
   Delete                :: Command
   FromScratch           :: Command
@@ -171,9 +172,8 @@ centralCommandParser =
                                 <$> switch "evaluate-only"     'e' "Pass --evaluate-only to 'nixops build'"
                                 <*> switch "build-only"        'b' "Pass --build-only to 'nixops build'"
                                 <*> switch "check"             'c' "Pass --check to 'nixops build'"
-                                <*> switch "bump-system-start" 's' "Bump cluster --system-start time"
-                                <*> (fromMaybe Ops.defaultHold . (Seconds . (* 60) . fromIntegral <$>)
-                                     <$> optional (optInteger "delay" 'd' "When bumping system start time, override the default start delay from 120 minutes to this")))
+                                <*> ((Seconds . (* 60) . fromIntegral <$>)
+                                      <$> optional (optInteger "bump-system-start-held-by" 't' "Bump cluster --system-start time, and add this many minutes to delay")))
    , ("destroy",                "Destroy the whole cluster",                                        pure Destroy)
    , ("delete",                 "Unregistr the cluster from NixOps",                                pure Delete)
    , ("fromscratch",            "Destroy, Delete, Create, Deploy",                                  pure FromScratch)
@@ -249,7 +249,7 @@ main = do
             Do cmds                  -> sequence_ $ doCommand o c <$> cmds
             Create                   -> Ops.create                    o c
             Modify                   -> Ops.modify                    o c
-            Deploy ev bu ch st de    -> Ops.deploy                    o c ev bu ch st de
+            Deploy ev bu ch buhold   -> Ops.deploy                    o c ev bu ch buhold
             Destroy                  -> Ops.destroy                   o c
             Delete                   -> Ops.delete                    o c
             FromScratch              -> Ops.fromscratch               o c
@@ -302,7 +302,8 @@ runTemplate o@Options{..} Template{..} = do
 
   Ops.GithubSource{..} <- Ops.readSource Ops.githubSource Nixpkgs
 
-  config <- Ops.mkConfig o tBranch tNixops tTopology ghRev tEnvironment tTarget tDeployments
+  systemStart <- timeCurrent
+  config <- Ops.mkConfig o tBranch tNixops tTopology ghRev tEnvironment tTarget tDeployments systemStart
   configFilename <- T.pack . Path.encodeString <$> Ops.writeConfig tFile config
 
   echo ""

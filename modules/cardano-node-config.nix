@@ -37,11 +37,11 @@ params:
     services.cardano-node = {
       enable     = true;
       nodeName   = params.name;
-      type       = params.type;
       nodeIndex  = params.i;
       port       = cconf.nodePort;
+      inherit (params) systemStart type;
       inherit (cconf) enableP2P genesisN slotDuration networkDiameter mpcRelayInterval;
-      inherit (cconf) totalMoneyAmount bitcoinOverFlat productionMode systemStart richPoorDistr;
+      inherit (cconf) totalMoneyAmount bitcoinOverFlat productionMode richPoorDistr;
       neighbours = builtins.trace "${params.name}: neighbours: ${concatStringsSep sep (map ppNeighbour neighbourPairs)}"
                                   neighbourPairs;
     };

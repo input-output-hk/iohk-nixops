@@ -28,10 +28,10 @@ import qualified Data.ByteString.Lazy.UTF8     as LBU
 import           Data.Char                        (ord, toLower)
 import           Data.Csv                         (decodeWith, FromRecord(..), FromField(..), HasHeader(..), defaultDecodeOptions, decDelimiter)
 import           Data.Either
-import           Data.Hourglass                   (timePrint, ISO8601_DateAndTime(..))
+import           Data.Hourglass                   (timeAdd, timeFromElapsed, timePrint, Duration(..), ISO8601_DateAndTime(..))
 import           Data.List                        (sort)
 import           Data.Maybe
-import qualified Data.Map                      as Map
+import qualified Data.Map.Strict               as Map
 import           Data.Monoid                      ((<>))
 import qualified Data.Set                      as Set
 import qualified Data.Text                     as T
@@ -65,9 +65,7 @@ defaultTarget        = AWS
 defaultNode          = NodeName "c-a-1"
 defaultNodePort      = PortNo 3000
 
-hardcodedHold, defaultHold :: Seconds
-hardcodedHold        = 3600 -- The hold-off fime hard-coded in cardano-sl, in seconds
-defaultHold          = 3600
+defaultHold          = 1200 :: Seconds -- 20 minutes
 
 
 -- * Projects
@@ -125,8 +123,8 @@ fromNodeName (NodeName x) = x
 --
 instance FromJSON FilePath where parseJSON = AE.withText "filepath" $ \v -> pure $ fromText v
 instance ToJSON   FilePath where toJSON    = AE.String . format fp
-deriving instance Generic Seconds
-instance FromJSON Seconds
+deriving instance Generic Seconds; instance FromJSON Seconds; instance ToJSON Seconds
+deriving instance Generic Elapsed; instance FromJSON Elapsed; instance ToJSON Elapsed
 
 
 -- * A bit of Nix types
@@ -178,7 +176,7 @@ nixpkgsNixosURL (Commit rev) = URL $
 -- | The set of first-class types present in Nix
 data NixValue
   = NixBool Bool
-  | NixInt  Integer
+  | NixInt  { fromNixInt :: Integer }
   | NixStr  Text
   | NixFile FilePath
   deriving (Generic, Show)
@@ -241,19 +239,8 @@ selectTopologyConfig Development _ = "topology-development.yaml"
 selectTopologyConfig Staging     _ = "topology-staging.yaml"
 selectTopologyConfig _           _ = "topology.yaml"
 
-type DeplArgs = Map.Map NixParam NixValue
-
 deployerIP :: Options -> IO IP
 deployerIP o = IP <$> incmd o "curl" ["--silent", fromURL awsPublicIPURL]
-
-selectDeploymentArgs :: Options -> FilePath -> Environment -> [Deployment] -> IO DeplArgs
-selectDeploymentArgs o _ env delts = do
-    let staticArgs = [ ("accessKeyId"
-                       , NixStr . fromNodeName $ selectDeployer env delts) ]
-    (IP deployerIp) <- deployerIP o
-    pure $ Map.fromList $
-      staticArgs
-      <> [ ("deployerIP",   NixStr deployerIp) ]
 
 
 -- * Topology
@@ -411,6 +398,10 @@ nixopsCmdOptions Options{..} NixopsConfig{..} =
   ]
 
 
+-- | Before adding a field here, consider, whether the value in question
+--   ought to be passed to Nix.
+--   If so, the way to do it is to add a deployment argument (see DeplArgs),
+--   which are smuggled across Nix border via --arg/--argstr.
 data NixopsConfig = NixopsConfig
   { cName             :: Text
   , cNixops           :: Maybe FilePath
@@ -438,15 +429,15 @@ instance ToJSON Target
 instance ToJSON Deployment
 instance ToJSON NixopsConfig where
   toJSON NixopsConfig{..} = AE.object
-   [ "name"        .= cName
-   , "nixops"      .= cNixops
-   , "nixpkgs"     .= fromCommit cNixpkgsCommit
-   , "topology"    .= cTopology
-   , "environment" .= showT cEnvironment
-   , "target"      .= showT cTarget
-   , "elements"    .= cElements
-   , "files"       .= cFiles
-   , "args"        .= cDeplArgs ]
+   [ "name"         .= cName
+   , "nixops"       .= cNixops
+   , "nixpkgs"      .= fromCommit cNixpkgsCommit
+   , "topology"     .= cTopology
+   , "environment"  .= showT cEnvironment
+   , "target"       .= showT cTarget
+   , "elements"     .= cElements
+   , "files"        .= cFiles
+   , "args"         .= cDeplArgs ]
 
 deploymentFiles :: Environment -> Target -> [Deployment] -> [Text]
 deploymentFiles cEnvironment cTarget cElements =
@@ -454,13 +445,32 @@ deploymentFiles cEnvironment cTarget cElements =
   "deployments/keypairs.nix":
   concat (elementDeploymentFiles cEnvironment cTarget <$> cElements)
 
+type DeplArgs = Map.Map NixParam NixValue
+
+selectDeploymentArgs :: Options -> FilePath -> Environment -> [Deployment] -> Elapsed -> IO DeplArgs
+selectDeploymentArgs o _ env delts (Elapsed systemStart) = do
+    let staticArgs = [ ("accessKeyId"
+                       , NixStr . fromNodeName $ selectDeployer env delts) ]
+    (IP deployerIp) <- deployerIP o
+    pure $ Map.fromList $
+      staticArgs
+      <> [ ("deployerIP",   NixStr deployerIp)
+         , ("systemStart",  NixInt $ fromIntegral systemStart) ]
+
+deplArg    :: NixopsConfig -> NixParam -> NixValue -> NixValue
+deplArg      NixopsConfig{..} k def = Map.lookup k cDeplArgs & fromMaybe def
+  --(errorT $ format ("Deployment arguments don't hold a value for key '"%s%"'.") (showT k))
+
+setDeplArg :: NixopsConfig -> NixParam -> NixValue -> NixopsConfig
+setDeplArg c@NixopsConfig{..} k v = c { cDeplArgs = Map.insert k v cDeplArgs }
+
 -- | Interpret inputs into a NixopsConfig
-mkConfig :: Options -> Branch -> Maybe FilePath -> Maybe FilePath -> Commit -> Environment -> Target -> [Deployment] -> IO NixopsConfig
-mkConfig o (Branch cName) cNixops mTopology cNixpkgsCommit cEnvironment cTarget cElements = do
-  let cFiles    = deploymentFiles                cEnvironment cTarget cElements
+mkConfig :: Options -> Branch -> Maybe FilePath -> Maybe FilePath -> Commit -> Environment -> Target -> [Deployment] -> Elapsed -> IO NixopsConfig
+mkConfig o (Branch cName) cNixops mTopology cNixpkgsCommit cEnvironment cTarget cElements systemStart = do
+  let cFiles    = deploymentFiles                          cEnvironment cTarget cElements
       cTopology = flip fromMaybe mTopology $
-                  selectTopologyConfig           cEnvironment         cElements
-  cDeplArgs <- selectDeploymentArgs  o cTopology cEnvironment         cElements
+                  selectTopologyConfig                     cEnvironment         cElements
+  cDeplArgs    <- selectDeploymentArgs o cTopology         cEnvironment         cElements systemStart
   pure NixopsConfig{..}
 
 -- | Write the config file
@@ -575,14 +585,13 @@ modify o@Options{..} c@NixopsConfig{..} = do
   liftIO . writeTextFile "topology.nix" . T.pack . LBU.toString $ encodePretty simpleTopo
   when oDebug $ dumpTopologyNix "./topology.nix"
 
-deploy :: Options -> NixopsConfig -> Bool -> Bool -> Bool -> Bool -> Seconds -> IO ()
-deploy o c@NixopsConfig{..} evonly buonly check bumpSystemStart hold = do
+deploy :: Options -> NixopsConfig -> Bool -> Bool -> Bool -> Maybe Seconds -> IO ()
+deploy o@Options{..} c@NixopsConfig{..} evonly buonly check bumpSystemStartHeldBy = do
   when (elem Nodes cElements) $ do
      keyExists <- testfile "keys/key1.sk"
      unless keyExists $
        die "Deploying nodes, but 'keys/key1.sk' is absent."
 
-  printf ("Deploying cluster "%s%"\n") cName
   export "NIX_PATH_LOCKED" "1"
   export "NIX_PATH" (nixpkgsCommitPath cNixpkgsCommit)
   when (not evonly) $ do
@@ -592,19 +601,28 @@ deploy o c@NixopsConfig{..} evonly buonly check bumpSystemStart hold = do
     when (elem Explorer cElements) $ do
       cmd o "scripts/generate-explorer-frontend.sh" []
 
-  modify o c
+  now <- timeCurrent
+  let startParam             = NixParam "systemStart"
+      secNixVal (Elapsed x)  = NixInt $ fromIntegral x
+      holdSecs               = fromMaybe defaultHold bumpSystemStartHeldBy
+      nowHeld                = now `timeAdd` mempty { durationSeconds = holdSecs }
+      startE                 = case bumpSystemStartHeldBy of
+        Just _  -> nowHeld
+        Nothing -> Elapsed $ fromIntegral $ fromNixInt $ deplArg c startParam (secNixVal nowHeld)
+      c' = setDeplArg c startParam $ secNixVal startE
+  when (isJust bumpSystemStartHeldBy) $ do
+    printf ("Setting --system-start to "%s%" ("%d%" minutes into future).  Don't forget to commit config YAML!\n")
+           (T.pack $ timePrint ISO8601_DateAndTime (timeFromElapsed startE :: DateTime)) (div holdSecs 60)
+    void $ writeConfig oConfigFile c'
 
-  when bumpSystemStart $ do
-    (Elapsed now) <- timeCurrent
-    let start :: Seconds = now + hold - hardcodedHold
-    printf ("Bumping system-start to "%d%" ("%d%" minutes into future).  Don't forget to commit!\n") start (div hold 60)
-    writeTextFile "config-system-start.nix" $ T.pack $ show (fromIntegral start :: Int)
+  modify o c'
 
-  nixops o c "deploy" $
-    [ "--max-concurrent-copy", "50", "-j", "4" ]
+  printf ("Deploying cluster "%s%"\n") cName
+  nixops o c' "deploy"
+    $  [ "--max-concurrent-copy", "50", "-j", "4" ]
     ++ [ "--evaluate-only" | evonly ]
     ++ [ "--build-only"    | buonly ]
-    ++ [ "--check"         | check ]
+    ++ [ "--check"         | check  ]
   echo "Done."
 
 destroy :: Options -> NixopsConfig -> IO ()
@@ -624,7 +642,7 @@ fromscratch o c = do
   destroy o c
   delete o c
   create o c
-  deploy o c False False False True defaultHold
+  deploy o c False False False (Just defaultHold)
 
 
 -- * Building
