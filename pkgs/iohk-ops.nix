@@ -1,6 +1,6 @@
 { mkDerivation, aeson, aeson-pretty, base, bytestring, cassava
-, containers, dns, hourglass, lens, lens-aeson, mtl, optional-args, safe
-, stdenv, system-filepath, text, turtle, unordered-containers
+, containers, dns, hourglass, lens, lens-aeson, mtl, optional-args
+, safe, stdenv, system-filepath, text, turtle, unordered-containers
 , utf8-string, vector, yaml
 }:
 mkDerivation {
@@ -10,8 +10,8 @@ mkDerivation {
   isLibrary = false;
   isExecutable = true;
   executableHaskellDepends = [
-    aeson aeson-pretty base bytestring cassava containers dns hourglass lens
-    lens-aeson mtl optional-args safe system-filepath text turtle
+    aeson aeson-pretty base bytestring cassava containers dns hourglass
+    lens lens-aeson mtl optional-args safe system-filepath text turtle
     unordered-containers utf8-string vector yaml
   ];
   doCheck = false;

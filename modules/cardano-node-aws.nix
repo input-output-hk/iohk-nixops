@@ -26,7 +26,9 @@ params:
         publicIP = if options.networking.publicIPv4.isDefined then config.networking.publicIPv4 else null;
         privateIP = if options.networking.privateIPv4.isDefined then config.networking.privateIPv4 else "0.0.0.0";
         statsdServer = "127.0.0.1:8125";
-      };
+      } // (optionalAttrs (config.services.cardano-node.enable && params.type == "relay") {
+        topologyFile = "/run/keys/topology.yaml";
+      });
 
       # TODO: DEVOPS-8
       #deployment.ec2.ami = (import ./amis.nix).${config.deployment.ec2.region};
