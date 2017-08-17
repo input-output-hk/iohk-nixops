@@ -11,6 +11,7 @@ import           Data.Monoid                      ((<>))
 import           Data.Optional (Optional)
 import qualified Data.Text                     as T
 import qualified Filesystem.Path.CurrentOS     as Path
+import qualified System.Environment            as Sys
 import           Turtle                    hiding (procs, shells)
 import           Time.Types
 import           Time.System
@@ -208,11 +209,12 @@ centralCommandParser =
 
 main :: IO ()
 main = do
+  cmdline <- T.concat . (T.pack <$>) . intersperse " " <$> Sys.getArgs
   (o@Options{..}, topcmd) <- options "Helper CLI around IOHK NixOps. For example usage see:\n\n  https://github.com/input-output-hk/internal-documentation/wiki/iohk-ops-reference#example-deployment" $
                              (,) <$> Ops.parserOptions <*> centralCommandParser
 
   case topcmd of
-    Template{..}                -> runTemplate        o topcmd
+    Template{..}                -> runTemplate        o topcmd cmdline
     SetRev       project commit -> runSetRev          o project commit
 
     _ -> do
@@ -283,8 +285,8 @@ main = do
             SetRev   _ _             -> error "impossible"
 
 
-runTemplate :: Options -> Command -> IO ()
-runTemplate o@Options{..} Template{..} = do
+runTemplate :: Options -> Command -> Text -> IO ()
+runTemplate o@Options{..} Template{..} cmdline = do
   when (elem (fromBranch tBranch) $ showT <$> (every :: [Deployment])) $
     die $ format ("the branch name "%w%" ambiguously refers to a deployment.  Cannot have that!") (fromBranch tBranch)
   homeDir <- home
@@ -303,13 +305,13 @@ runTemplate o@Options{..} Template{..} = do
   Ops.GithubSource{..} <- Ops.readSource Ops.githubSource Nixpkgs
 
   systemStart <- timeCurrent
-  config <- Ops.mkConfig o tBranch tNixops tTopology ghRev tEnvironment tTarget tDeployments systemStart
+  config <- Ops.mkConfig o cmdline tBranch tNixops tTopology ghRev tEnvironment tTarget tDeployments systemStart
   configFilename <- T.pack . Path.encodeString <$> Ops.writeConfig tFile config
 
   echo ""
   echo $ "-- " <> (unsafeTextToLine $ configFilename) <> " is:"
   cmd o "cat" [configFilename]
-runTemplate _ _ = error "impossible"
+runTemplate _ _ _ = error "impossible"
 
 runSetRev :: Options -> Project -> Commit -> IO ()
 runSetRev o proj rev = do

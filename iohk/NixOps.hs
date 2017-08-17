@@ -404,6 +404,7 @@ nixopsCmdOptions Options{..} NixopsConfig{..} =
 --   which are smuggled across Nix border via --arg/--argstr.
 data NixopsConfig = NixopsConfig
   { cName             :: Text
+  , cGenCmdline       :: Text
   , cNixops           :: Maybe FilePath
   , cNixpkgsCommit    :: Commit
   , cTopology         :: FilePath
@@ -416,6 +417,7 @@ data NixopsConfig = NixopsConfig
 instance FromJSON NixopsConfig where
     parseJSON = AE.withObject "NixopsConfig" $ \v -> NixopsConfig
         <$> v .: "name"
+        <*> v .: "gen-cmdline"
         <*> v .: "nixops"
         <*> v .: "nixpkgs"
         <*> v .: "topology"
@@ -430,6 +432,7 @@ instance ToJSON Deployment
 instance ToJSON NixopsConfig where
   toJSON NixopsConfig{..} = AE.object
    [ "name"         .= cName
+   , "gen-cmdline"  .= cGenCmdline
    , "nixops"       .= cNixops
    , "nixpkgs"      .= fromCommit cNixpkgsCommit
    , "topology"     .= cTopology
@@ -465,8 +468,8 @@ setDeplArg :: NixopsConfig -> NixParam -> NixValue -> NixopsConfig
 setDeplArg c@NixopsConfig{..} k v = c { cDeplArgs = Map.insert k v cDeplArgs }
 
 -- | Interpret inputs into a NixopsConfig
-mkConfig :: Options -> Branch -> Maybe FilePath -> Maybe FilePath -> Commit -> Environment -> Target -> [Deployment] -> Elapsed -> IO NixopsConfig
-mkConfig o (Branch cName) cNixops mTopology cNixpkgsCommit cEnvironment cTarget cElements systemStart = do
+mkConfig :: Options -> Text -> Branch -> Maybe FilePath -> Maybe FilePath -> Commit -> Environment -> Target -> [Deployment] -> Elapsed -> IO NixopsConfig
+mkConfig o cGenCmdline (Branch cName) cNixops mTopology cNixpkgsCommit cEnvironment cTarget cElements systemStart = do
   let cFiles    = deploymentFiles                          cEnvironment cTarget cElements
       cTopology = flip fromMaybe mTopology $
                   selectTopologyConfig                     cEnvironment         cElements
