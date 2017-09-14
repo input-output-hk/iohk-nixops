@@ -1,5 +1,6 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
@@ -16,9 +17,10 @@ import Prelude hiding (FilePath)
 import           Control.Exception (throwIO)
 import qualified Data.Aeson                    as AE
 import           Data.Aeson                       ((.:), (.=))
+import qualified Data.Aeson.Types              as AE
 import qualified Data.ByteString.Lazy          as BL
 import qualified Data.ByteString.UTF8          as BUTF8
-import Data.Char (ord)
+import           Data.Char                        (ord, toLower)
 import qualified Data.Yaml                     as YAML
 import Data.Yaml (FromJSON(..), ToJSON(..))
 import           Data.Maybe
@@ -73,6 +75,9 @@ projectURL     IOHK            = "https://github.com/input-output-hk/iohk-nixops
 projectURL     Nixpkgs         = "https://github.com/nixos/nixpkgs.git"
 projectURL     Stack2nix       = "https://github.com/input-output-hk/stack2nix.git"
 
+nixpkgsRevTarball :: Commit -> URL
+nixpkgsRevTarball (Commit rev) = URL $ "https://github.com/NixOS/nixpkgs/archive/"<>rev<>".tar.gz"
+
 projectSrcFile :: Project -> FilePath
 projectSrcFile CardanoSL       = "cardano-sl-src.json"
 projectSrcFile CardanoExplorer = "cardano-sl-explorer-src.json"
@@ -113,7 +118,7 @@ data NixSource (a :: SourceKind) where
     , ghRev             :: Commit
     , ghSha256          :: NixHash
     } -> NixSource Github
-deriving instance Show (NixSource a)
+deriving instance Show    (NixSource a)
 instance FromJSON (NixSource Git) where
   parseJSON = AE.withObject "GitSource" $ \v -> GitSource
       <$> v .: "url"
@@ -126,6 +131,20 @@ instance FromJSON (NixSource Github) where
       <*> v .: "repo"
       <*> v .: "rev"
       <*> v .: "sha256"
+instance ToJSON (NixSource Github) where
+    toJSON GithubSource {..} = AE.object [
+          "owner"        .= ghOwner
+        , "repo"         .= ghRepo
+        , "rev"          .= ghRev
+        , "sha256"       .= ghSha256
+        ]
+instance ToJSON (NixSource Git) where
+    toJSON GitSource {..} = AE.object [
+          "url"             .= gUrl
+        , "rev"             .= gRev
+        , "sha256"          .= gSha256
+        , "fetchsubmodules" .= gFetchSubmodules
+        ]
 
 githubSource :: ByteString -> Maybe (NixSource Github)
 githubSource = AE.decode
@@ -136,6 +155,9 @@ readSource :: (ByteString -> Maybe (NixSource a)) -> Project -> IO (NixSource a)
 readSource parser (projectSrcFile -> path) =
   (fromMaybe (errorT $ format ("File doesn't parse as NixSource: "%fp) path) . parser)
   <$> BL.readFile (T.unpack $ format fp path)
+writeSource :: (NixSource a -> ByteString) -> NixSource a -> Project -> IO ()
+writeSource encoder src (projectSrcFile -> path) =
+  BL.writeFile (T.unpack $ format fp path) $ encoder src
 
 nixpkgsNixosURL :: Commit -> URL
 nixpkgsNixosURL (Commit rev) = URL $
