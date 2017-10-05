@@ -9,7 +9,7 @@
   resources.ec2SecurityGroups =
     listToAttrs (flip map globals.orgXRegions
                  ({ org, region }:
-                  nameValuePair "allow-all-${org}-${region}"
+                  nameValuePair "allow-all-${region}-${org}"
                                 { inherit region;
                                   accessKeyId = globals.orgAccessKeys.${org};
                                   description = "Allow all ${org}/${region}";
