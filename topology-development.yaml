@@ -10,15 +10,22 @@ nodes:
     type: core
     region: eu-west-1
     zone:   eu-west-1a
-    static-routes: [["a1","c1"], ["r2"]]
+    static-routes: [["a1","c1","d1"], ["r2"]]
     host: b1.cardano
     port: 3000
   'c1':
     type: core
     region: ap-southeast-1
     zone:   ap-southeast-1b
-    static-routes: [["a1","b1"]]
+    static-routes: [["a1","b1","d1"]]
     host: c1.cardano
+    port: 3000
+  'd1':
+    type: core
+    region: eu-central-1
+    zone:   eu-central-1b
+    static-routes: [["b1","c1"]]
+    host: d1.cardano
     port: 3000
 
   'r1':
