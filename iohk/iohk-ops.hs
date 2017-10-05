@@ -324,7 +324,7 @@ runTemplate o@Options{..} Template{..} args = do
 
   systemStart <- timeCurrent
   let cmdline = T.concat $ intersperse " " $ fromArg <$> args
-  nixops <- incmd o "nix-build" ["-A", "nixops"]
+  nixops <- T.strip <$> incmd o "nix-build" ["-A", "nixops"]
   config <- Ops.mkNewConfig o cmdline tName (tNixops <|> (Path.fromText <$> Just nixops)) tGenesis tTopology tEnvironment tTarget tDeployments systemStart tConfigurationKey
   configFilename <- T.pack . Path.encodeString <$> Ops.writeConfig tFile config
 
