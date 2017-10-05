@@ -39,7 +39,9 @@ globals: imports: params:
                                                    "allow-cardano-public-tcp-${params.region}" ]
         ++ optionals config.global.enableEkgWeb  [ "allow-ekg-public-tcp-${params.region}-${params.org}" ];
       in map (resolveSGName resources)
-             (optionals (! config.global.omitDetailedSecurityGroups) sgNames);
+             (if config.global.omitDetailedSecurityGroups
+              then [ "allow-all-${params.region}-${params.org}" ]
+              else sgNames);
 
     networking.extraHosts =
     let hostList = if config.services.cardano-node.enable == false then []
