@@ -844,7 +844,7 @@ deploy o@Options{..} c@NixopsConfig{..} dryrun buonly check reExplorer bumpSyste
   let mGenesis = mDeplArg c $ NixParam "genesis"
       configurationTmpl = "configuration.yaml.tmpl"
   genesisHash <- case mGenesis of
-                   NixNull   -> pure "0000000000000000000000000000000000000000000000000000000000000000"
+                   NixNull   -> pure "a000000000000000000000000000000000000000000000000000000000000000"
                    NixFile f -> do
                      let genesisTmpl = format (fp%".tmpl") f
                      cmd o "cp"  ["-f", genesisTmpl,       format fp f]
