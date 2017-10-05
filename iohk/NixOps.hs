@@ -380,7 +380,7 @@ envSettings env =
       , envDefaultConfigurationKey = Devnet_shortep_full
       , envDefaultConfig     = "config.yaml"
       , envDefaultGenesis    = Nothing
-      , envDefaultTopology   = "topology.yaml"
+      , envDefaultTopology   = "topology-development.yaml"
       , envDeploymentFiles   = [ (Nodes,          All, "deployments/cardano-nodes-env-development.nix")
                                , (Explorer,       All, "deployments/cardano-explorer-env-development.nix")
                                , (ReportServer,   All, "deployments/report-server-env-development.nix")
