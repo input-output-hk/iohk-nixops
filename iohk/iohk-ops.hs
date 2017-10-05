@@ -40,9 +40,7 @@ argReadLower :: (Bounded a, Enum a, Read a, Show a) => ArgName -> Optional HelpM
 argReadLower = arg (diagReadCaseInsensitive . T.unpack)
 
 parserConfigurationKey :: Parser ConfigurationKey
-parserConfigurationKey = (optReadLower "configuration-key" 'k' $ pure $
-                  Turtle.HelpMessage $ "Configuration key: "
-                  <> T.intercalate ", " (lowerShowT <$> (every :: [ConfigurationKey])) <> ".  Default: env-specific.")
+parserConfigurationKey = ConfigurationKey <$> (optText "configuration-key" 'k' "Configuration key.  Default: env-specific.")
 
 parserEnvironment :: Parser Environment
 parserEnvironment = fromMaybe Ops.defaultEnvironment <$> optional (optReadLower "environment" 'e' $ pure $

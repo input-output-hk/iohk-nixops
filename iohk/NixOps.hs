@@ -135,6 +135,7 @@ projectSrcFile Nixops          = error "No corresponding -src.json spec for 'nix
 newtype AccessKeyId  = AccessKeyId  { fromAccessKeyId  :: Text   } deriving (FromJSON, Generic, Show, IsString, ToJSON)
 newtype Arg          = Arg          { fromArg          :: Text   } deriving (IsString, Show)
 newtype Branch       = Branch       { fromBranch       :: Text   } deriving (FromJSON, Generic, Show, IsString)
+newtype ConfigurationKey = ConfigurationKey { fromConfigurationKey :: Text } deriving (IsString, Show)
 newtype Commit       = Commit       { fromCommit       :: Text   } deriving (Eq, FromJSON, Generic, Show, IsString, ToJSON)
 newtype Exec         = Exec         { fromExec         :: Text   } deriving (IsString, Show)
 newtype EnvVar       = EnvVar       { fromEnvVar       :: Text   } deriving (IsString, Show)
@@ -168,25 +169,6 @@ data PassCheck        = PassCheck        | DontPassCheck      deriving (Bounded,
 data WipeJournals     = WipeJournals     | KeepJournals       deriving (Bounded, Eq, Ord, Show); instance Flag WipeJournals
 data WipeNodeDBs      = WipeNodeDBs      | KeepNodeDBs        deriving (Bounded, Eq, Ord, Show); instance Flag WipeNodeDBs
 data ResumeFailed     = ResumeFailed     | DontResume         deriving (Bounded, Eq, Ord, Show); instance Flag ResumeFailed
-
--- Names and their ordering taken from: https://github.com/input-output-hk/cardano-sl/blob/master/core/constants.yaml
-data ConfigurationKey
-  = Dev
-  | Mainnet
-  | Testnet_public_full
-  | Testnet_staging_full
-  | Devnet_midep_full
-  | Devnet_longep_full
-  | Devnet_shortep_full
-  | Testnet_public_wallet
-  | Testnet_staging_wallet
-  | Devnet_midep_wallet
-  | Devnet_longep_wallet
-  | Devnet_shortep_wallet
-  | Benchmark
-  | Devnet_shortep_updated_full
-  | Devnet_shortep_updated_wallet
-  deriving (Bounded, Enum, Eq, Read, Show)
 
 deriving instance Eq NodeType
 deriving instance Read NodeName
@@ -352,7 +334,7 @@ envSettings env =
   in case env of
     Staging      -> EnvSettings
       { envDeployerUser      = "staging"
-      , envDefaultConfigurationKey = Testnet_staging_full
+      , envDefaultConfigurationKey = "testnet_staging_full"
       , envDefaultConfig     = "staging-testnet.yaml"
       , envDefaultGenesis    = Just "genesis-staging.json"
       , envDefaultTopology   = "topology-staging.yaml"
@@ -363,7 +345,7 @@ envSettings env =
                                ] <> deplAgnosticFiles}
     Production  -> EnvSettings
       { envDeployerUser      = "live-production"
-      , envDefaultConfigurationKey = Testnet_public_full
+      , envDefaultConfigurationKey = "testnet_public_full"
       , envDefaultConfig     = "production-testnet.yaml"
       , envDefaultGenesis    = Just "genesis-mainnet.json"
       , envDefaultTopology   = "topology-production.yaml"
@@ -377,7 +359,7 @@ envSettings env =
                                ] <> deplAgnosticFiles}
     Development -> EnvSettings
       { envDeployerUser      = "staging"
-      , envDefaultConfigurationKey = Devnet_shortep_full
+      , envDefaultConfigurationKey = "devnet_shortep_full"
       , envDefaultConfig     = "config.yaml"
       , envDefaultGenesis    = Nothing
       , envDefaultTopology   = "topology-development.yaml"
@@ -637,7 +619,7 @@ selectInitialConfigDeploymentArgs _ mGenesis _ env delts (Elapsed systemStart) m
       akidDependentArgs
       <> [ ("systemStart",  NixInt $ fromIntegral systemStart)
          , ("genesis",      fromMaybe NixNull $ NixFile <$> mGenesis)
-         , ("configurationKey", NixStr $ lowerShowT configurationKey) ]
+         , ("configurationKey", NixStr $ fromConfigurationKey configurationKey) ]
 
 deplArg :: NixopsConfig -> NixParam -> NixValue -> NixValue
 deplArg    NixopsConfig{..} k def = Map.lookup k cDeplArgs & fromMaybe def
