@@ -105,12 +105,13 @@ data Command where
   Deploy                :: RebuildExplorer -> BuildOnly -> DryRun -> PassCheck -> Maybe Seconds -> Command
   Destroy               :: Command
   Delete                :: Command
-  FromScratch           :: Command
   Info                  :: Command
 
-  -- * Deployment
+  -- * high-level scenarios
   DeployFull            :: Branch -> Seconds -> NewGenesis -> Maybe Turtle.FilePath -> WipeNodeDBs -> RebuildExplorer -> Validate -> ResumeFailed -> Command
   DeployFullDeployerPhase :: Seconds -> WipeNodeDBs -> RebuildExplorer -> Command
+  FromScratch           :: Command
+  ReallocateCoreIPs     :: Command
 
   -- * live cluster ops
   Ssh                   :: Exec -> [Arg] -> Command
@@ -181,6 +182,8 @@ centralCommandParser =
    , ("destroy",                "Destroy the whole cluster",                                        pure Destroy)
    , ("delete",                 "Unregistr the cluster from NixOps",                                pure Delete)
    , ("fromscratch",            "Destroy, Delete, Create, Deploy",                                  pure FromScratch)
+   , ("reallocate-core-ips",    "Destroy elastic IPs corresponding to the nodes listed and reprovision cluster",
+                                                                                                    pure ReallocateCoreIPs)
    , ("info",                   "Invoke 'nixops info'",                                             pure Info)
    , ("deploy-full",            "Perform a full remote deployment from the specified Cardano branch, optionally with genesis regeneration",
                                 DeployFull
@@ -277,10 +280,12 @@ runTop o@Options{..} args topcmd = do
             Deploy ner bu dry ch buh -> Ops.deploy                    o c dry bu ch ner buh
             Destroy                  -> Ops.destroy                   o c
             Delete                   -> Ops.delete                    o c
-            FromScratch              -> Ops.fromscratch               o c
             Info                     -> Ops.nixops                    o c "info" []
+            -- * High-level scenarios
             DeployFull              br st genes preGen wipeDB noExRe skipV resume -> Ops.deployFull              o c br st genes preGen wipeDB noExRe skipV resume
             DeployFullDeployerPhase    st              wipeDB noExRe              -> Ops.deployFullDeployerPhase o c    st              wipeDB noExRe
+            FromScratch              -> Ops.fromscratch               o c
+            ReallocateCoreIPs        -> Ops.reallocateCoreIPs         o c
             -- * live deployment ops
             DeployedCommit m         -> Ops.deployedCommit            o c m
             CheckStatus              -> Ops.checkstatus               o c
