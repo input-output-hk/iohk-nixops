@@ -3,28 +3,28 @@ nodes:
     type: core
     region: eu-central-1
     zone:   eu-central-1b
-    static-routes: [["b1","c1"], ["r1"]]
+    static-routes: [["b1","c1"], ["r1"], ["d1"]]
     host: a1.cardano
     port: 3000
   'b1':
     type: core
     region: eu-west-1
     zone:   eu-west-1a
-    static-routes: [["a1","c1","d1"], ["r2"]]
+    static-routes: [["c1","d1"], ["r2"], ["a1"]]
     host: b1.cardano
     port: 3000
   'c1':
     type: core
     region: ap-southeast-1
     zone:   ap-southeast-1b
-    static-routes: [["a1","b1","d1"]]
+    static-routes: [["d1","a1"], ["r3"], ["b1"]]
     host: c1.cardano
     port: 3000
   'd1':
     type: core
     region: eu-central-1
     zone:   eu-central-1b
-    static-routes: [["b1","c1"]]
+    static-routes: [["a1","b1"], ["c1"]]
     host: d1.cardano
     port: 3000
 
@@ -32,20 +32,20 @@ nodes:
     type: relay
     region: ap-southeast-1
     zone:   ap-southeast-1b
-    static-routes: [["a1"]]
+    static-routes: [["a1"], ["b1"]]
     host: r1.cardano
     port: 3000
   'r2':
     type: relay
     region: eu-central-1
     zone:   eu-central-1b
-    static-routes: [["b1"]]
+    static-routes: [["b1"], ["c1"]]
     host: r2.cardano
     port: 3000
   'r3':
     type: relay
     region: eu-central-1
     zone:   eu-central-1b
-    static-routes: [["c1"]]
+    static-routes: [["c1"], ["d1"]]
     host: r3.cardano
     port: 3000
