@@ -182,7 +182,7 @@ centralCommandParser =
    , ("destroy",                "Destroy the whole cluster",                                        pure Destroy)
    , ("delete",                 "Unregistr the cluster from NixOps",                                pure Delete)
    , ("fromscratch",            "Destroy, Delete, Create, Deploy",                                  pure FromScratch)
-   , ("reallocate-core-ips",    "Destroy elastic IPs corresponding to the nodes listed and reprovision cluster",
+   , ("reallocate-core-ips",    "Destroy elastic IPs corresponding to the nodes listed and redeploy cluster",
                                                                                                     pure ReallocateCoreIPs)
    , ("info",                   "Invoke 'nixops info'",                                             pure Info)
    , ("deploy-full",            "Perform a full remote deployment from the specified Cardano branch, optionally with genesis regeneration",

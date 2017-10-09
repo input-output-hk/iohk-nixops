@@ -407,10 +407,11 @@ readTopology file = do
     Right (topology :: Topology) -> pure topology
     Left err -> errorT $ format ("Failed to parse topology file: "%fp%": "%w) file err
 
-data SimpleTopo
+newtype SimpleTopo
   =  SimpleTopo { fromSimpleTopo :: (Map.Map NodeName SimpleNode) }
   deriving (Generic, Show)
 instance ToJSON SimpleTopo
+
 data SimpleNode
   =  SimpleNode
      { snType     :: NodeType
@@ -435,6 +436,7 @@ instance ToJSON SimpleNode where-- toJSON = jsonLowerStrip 2
    , "peers"       .= snInPeers
    , "kademlia"    .= snKademlia
    , "public"      .= snPublic ]
+
 instance ToJSON NodeRegion
 instance ToJSON NodeName
 deriving instance Generic NodeName
@@ -447,9 +449,6 @@ topoNodes (SimpleTopo cmap) = Map.keys cmap
 
 topoCores :: SimpleTopo -> [NodeName]
 topoCores = (fst <$>) . filter ((== NodeCore) . snType . snd) . Map.toList . fromSimpleTopo
-
-topoNCores :: SimpleTopo -> Int
-topoNCores = length . topoCores
 
 summariseTopology :: Topology -> SimpleTopo
 summariseTopology (TopologyStatic (AllStaticallyKnownPeers nodeMap)) =
@@ -976,7 +975,7 @@ generateOrInsertGenesis o NixopsConfig{..} cardanoBranch preGenesis = do
       genSuffix        = "tn"
       genesisName'     = "genesis-" <> genSuffix :: Text
       genesisTarball   = Path.fromText genesisName' <.> "tgz"
-      (,) genM genN    = (,) (topoNCores topology) 1200
+      (,) genM genN    = (,) (length . topoCores $ topology) 1200
       genFiles         = zip [ "genesis-core.bin"
                              , "genesis-godtossing.bin"
                              , "genesisCreation.log" ]
@@ -1067,7 +1066,7 @@ deployFullLocalPhase o@Options{..} c@NixopsConfig{..} cardanoBranchToDrive doGen
       _                    -> pure ()
     (genesisName,
      genesisPath) <- generateOrInsertGenesis o c cardanoBranchToDrive preGenesis
-    let richKeys = topoNCores topology
+    let richKeys = length . topoCores $ topology
     printf ("Updating deployer genesis: "%s%"\n") deploymentSource
     echo "  -- removing old genesis"
     cmd o "ssh" [ deploymentAccount, "bash", "-c", format ("'rm -rf ./genesis-tn-*'")]
