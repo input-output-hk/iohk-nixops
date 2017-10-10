@@ -10,8 +10,9 @@ with import (fixedNixpkgs + "/pkgs/top-level/release-lib.nix") { inherit support
 let
   iohkpkgs = import ./../default.nix { inherit pkgs; };
   jobs = mapTestOn (packagePlatforms iohkpkgs);
-  cardanoSrc = pkgs.fetchgit (builtins.fromJSON (builtins.readFile ./../cardano-sl-src.json));
+  cardano-sl-src = builtins.fromJSON (builtins.readFile ./../cardano-sl-src.json);
+  cardanoSrc = pkgs.fetchgit cardano-sl-src;
 in rec {
   inherit (jobs) iohk-ops nixops;
   tests          = import ./../tests     { inherit pkgs; supportedSystems = [ "x86_64-linux" ]; };
-} // (import "${cardanoSrc}/release.nix" {})
+} // (import "${cardanoSrc}/release.nix" { cardano = { outPath = cardanoSrc; rev = cardano-sl-src.rev; }; })
