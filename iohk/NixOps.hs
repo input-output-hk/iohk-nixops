@@ -840,7 +840,7 @@ deploy o@Options{..} c@NixopsConfig{..} dryrun buonly check reExplorer bumpSyste
   when (dryrun /= DryRun && buonly /= BuildOnly) $ do
     deployerIP <- establishDeployerIP o oDeployerIP
     setenv o "SMART_GEN_IP" $ getIP deployerIP
-  when (elem Nodes cElements) $
+  when (elem Nodes cElements && cEnvironment == Production) $
     setenv o "GC_INITIAL_HEAP_SIZE" (showT $ 15 * 1024*1024*1024) -- for 100 nodes it eats 12GB of ram *and* needs a bigger heap
 
   now <- timeCurrent
