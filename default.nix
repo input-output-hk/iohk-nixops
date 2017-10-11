@@ -40,6 +40,7 @@ in {
              (compiler.callPackage ./iohk/default.nix {})
              (drv: {
                 executableToolDepends = [ pkgs.makeWrapper ];
+                libraryHaskellDepends = iohk-ops-extra-runtime-deps;
                 postInstall = ''
                   wrapProgram $out/bin/iohk-ops \
                   --prefix PATH : "${pkgs.lib.makeBinPath iohk-ops-extra-runtime-deps}"
