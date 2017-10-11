@@ -15,6 +15,9 @@ with pkgs.haskell.lib;
 let
   iohk-ops-extra-runtime-deps = [
     pkgs.git pkgs.nix-prefetch-scripts compiler.yaml
+    pkgs.wget pkgs.awscli # for scripts/aws.hs
+    pkgs.nodejs           # for cardano-sl/scripts/js/genesis-hash.js
+                          #     ..which also needs `npm install blakejs canonical-json`
   ];
   # we allow on purpose for cardano-sl to have it's own nixpkgs to avoid rebuilds
   cardano-sl-src = builtins.fromJSON (builtins.readFile ./cardano-sl-src.json);
