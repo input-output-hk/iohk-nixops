@@ -31,6 +31,8 @@ in {
       ./../modules/common.nix
     ];
 
+    environment.systemPackages = [ iohk-pkgs.iohk-ops ];
+
     users = {
       users.staging = {
         description     = "cardano staging";
