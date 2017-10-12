@@ -11,6 +11,8 @@ let
 in pkgs.lib.overrideDerivation iohk-ops.env
    (old: {
      shellHook = ''
-       alias io='${ioAlias}'
+       io () {
+        ${ioAlias} "$@"
+       }
      '';
     })
