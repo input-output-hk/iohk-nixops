@@ -1,56 +1,42 @@
 Collection of tools to deploy IOHK infrastructure.
 
-### Structure
+### File structure
 
-- `deployments` - includes all NixOps deployments controlled via `.hs` scripts
+- `deployments` - includes all NixOps deployments inputs controlled via `.hs` scripts
 - `modules` - NixOS modules
 - `lib.nix` - wraps upstream `<nixpkgs/lib.nix>` with our common functions
 - `scripts` - has bash scripts not converted to Haskell/Turtle into Cardano.hs yet
 - `default.nix` - is a collection of Haskell packages
 - `static` includes files using in deployments
-- `jobsets` is used by Hydra CI
+- `jobsets` jobsets declaratively provisioned by Hydra CI
+- `tests` - NixOS tests for the `modules`
+- `iohk` - Haskell automation of opsy stuff
 
 
-### Compiling localy
+### Usage
 
-     $ ./CardanoCSL.hs build
+    $(nix-build -A iohk-ops)/bin/iohk-ops --help
 
-### Deploying changes
 
-    $ ./CardanoCSL.hs deploy
+### Deployments file structure
 
-**Note this will not remove machines if they no longer exist.**
+There is one global resource file `deployments/keypairs.nix` for all deployments. That's where
+resources that are only needed in all of deployments are provisioned.
 
-### Removing machines
+Per each set of machines (which can be combined or used standalone in a deployment) there are files:
 
-If you want to remove a machine simply remove them in the bottom part of the `nixops.nix` file.
-Then run `nixops deploy` with `-k`:
+- `{purpose}.nix` set of "logical" machines
+- `{purpose}-target-{target}.nix` set of physical machines for given target (aws, ...)
+- `{purpose}-env-{environment}.nix` set of environment specific overrides (currently implies aws target)
 
-./Cardano.hs deploy
+[Explanation about logical vs physical can be found in Nixops manual](https://nixos.org/nixops/manual/#chap-introduction)
 
-### List all deployments
+Example for deploying cardano nodes in production:
 
-    $ nixops list
+- cardano-nodes.nix
+- cardano-nodes-target-aws.nix
+- cardano-nodes-env-production.nix
 
-### Information about all machines (including public IPs)
-
-    $ nixops info -d <deployment-name>
-
-### SSH to a single machine
-
-    $ nixops ssh -d <deployment-name> <machine-name>
-
-Replace `<machine-name>` with the machine you want to connect to (from `info` call).
-
-### Destroy everything
-
-    $ ./CardanoCSL.hs destroy
-
-### Building AMIs
-
-    $ ./CardanoCSL.hs ami -c config.yaml
-
-This will update `modules/amis.nix` so make sure to commit it.
 
 ### Getting SSH access
 
