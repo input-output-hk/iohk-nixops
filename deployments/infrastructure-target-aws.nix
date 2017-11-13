@@ -4,42 +4,33 @@ with (import ./../lib.nix);
 let org = "IOHK";
     region = "eu-central-1";
     accessKeyId = IOHKaccessKeyId;
+    generic-infra-host =
+      { ebsInitialRootDiskSize
+      , allowJumphostSSH ? true
+      , allowPublicSSH ? false
+      , allowPublicWWW ? false
+       }:
+        { config, pkgs, resources, ... }: {
+          imports = [
+            ./../modules/amazon-base.nix
+          ];
+
+          deployment.ec2 = {
+            inherit accessKeyId;
+            instanceType = mkForce "r3.2xlarge";
+            ebsInitialRootDiskSize = mkForce ebsInitialRootDiskSize;
+            associatePublicIpAddress = true;
+            securityGroups =
+              optionals allowJumphostSSH [ resources.ec2SecurityGroups."allow-deployer-ssh-${region}-${org}" ] ++
+              optionals allowPublicSSH   [ resources.ec2SecurityGroups."allow-all-ssh-${region}-${org}"      ] ++
+              optionals allowPublicWWW   [ resources.ec2SecurityGroups."allow-public-www-${region}-${org}"   ];
+          };
+        };
 in rec {
-  hydra = { config, pkgs, resources, ... }: {
-    imports = [
-      ./../modules/amazon-base.nix
-    ];
-
-    deployment.ec2 = {
-      inherit accessKeyId;
-      instanceType = mkForce "r3.2xlarge";
-      ebsInitialRootDiskSize = mkForce 200;
-      associatePublicIpAddress = true;
-      securityGroups = [
-        resources.ec2SecurityGroups."allow-deployer-ssh-${region}-${org}"
-        resources.ec2SecurityGroups."allow-public-www-${region}-${org}"
-      ];
-    };
-  };
-
-  hydra-build-slave-1 = hydra;
-  hydra-build-slave-2 = hydra;
-
-  cardano-deployer = { config, pkgs, resources, ... }: {
-    imports = [
-      ./../modules/amazon-base.nix
-    ];
-
-    deployment.ec2 = {
-      inherit accessKeyId;
-      instanceType = mkForce "r3.2xlarge";
-      ebsInitialRootDiskSize = mkForce 50;
-      associatePublicIpAddress = true;
-      securityGroups = [
-        resources.ec2SecurityGroups."allow-all-ssh-${region}-${org}"
-      ];
-    };
-  };
+  hydra               = generic-infra-host { ebsInitialRootDiskSize = 200; allowPublicWWW = true; };
+  hydra-build-slave-1 = generic-infra-host { ebsInitialRootDiskSize = 200; allowPublicWWW = true; };
+  hydra-build-slave-2 = generic-infra-host { ebsInitialRootDiskSize = 200; allowPublicWWW = true; };
+  cardano-deployer    = generic-infra-host { ebsInitialRootDiskSize = 50;  allowPublicSSH = true; allowJumphostSSH = false; };
 
   resources = {
     ec2SecurityGroups = {
