@@ -25,6 +25,30 @@ in {
 
   hydra-build-slave-1 = mkHydraBuildSlave;
   hydra-build-slave-2 = mkHydraBuildSlave;
+  kite                = { name, config, pkgs, ... }: {
+    imports = [
+      ./../modules/common.nix
+      ./../modules/hydra-slave.nix
+      ./../modules/buildkite-agent.nix
+    ];
+    services.io-buildkite-agent = {
+      enable = true;
+      name   = name;
+      openssh.privateKey = "/run/keys/buildkite-ssh-private";
+      openssh.publicKey  = "/run/keys/buildkite-ssh-public";
+      token              = ./. + "/../static/buildkite-token";
+    };
+    deployment.keys = {
+      buildkite-ssh-private = {
+        keyFile = ./. + "/../static/buildkite-ssh";
+        user    = "buildkite-agent";
+      };
+      buildkite-ssh-public = {
+        keyFile = ./. + "/../static/buildkite-ssh.pub";
+        user    = "buildkite-agent";
+      };
+    };
+  };
 
   cardano-deployer = { config, pkgs, ... }: {
     imports = [

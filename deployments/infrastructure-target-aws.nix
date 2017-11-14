@@ -30,6 +30,7 @@ in rec {
   hydra               = generic-infra-host { ebsInitialRootDiskSize = 200; allowPublicWWW = true; };
   hydra-build-slave-1 = generic-infra-host { ebsInitialRootDiskSize = 200; allowPublicWWW = true; };
   hydra-build-slave-2 = generic-infra-host { ebsInitialRootDiskSize = 200; allowPublicWWW = true; };
+  kite                = generic-infra-host { ebsInitialRootDiskSize = 200; allowPublicWWW = true; };
   cardano-deployer    = generic-infra-host { ebsInitialRootDiskSize = 50;  allowPublicSSH = true; allowJumphostSSH = false; };
 
   resources = {
