@@ -12,7 +12,6 @@
 
 module NixOps (
     nixops
-  , create
   , modify
   , deploy
   , destroy
@@ -591,16 +590,6 @@ exists o NixopsConfig{..} = do
   (code, _, _) <- cmd'' o (ops <> " info -d " <> (fromNixopsDepl cName))
   pure $ code == ExitSuccess
 
-create :: Options -> NixopsConfig -> IO ()
-create o c@NixopsConfig{..} = do
-  deplExists <- exists o c
-  if deplExists
-  then do
-    printf ("Deployment already exists?: '"%s%"'\n") $ fromNixopsDepl cName
-  else do
-    printf ("Creating deployment "%s%"\n") $ fromNixopsDepl cName
-    nixops o c "create" $ Arg <$> deploymentFiles cEnvironment cTarget cElements
-
 buildGlobalsImportNixExpr :: [(NixParam, NixValue)] -> NixValue
 buildGlobalsImportNixExpr deplArgs =
   NixImport (NixFile "globals.nix")
@@ -617,8 +606,14 @@ computeFinalDeploymentArgs o@Options{..} NixopsConfig{..} = do
 
 modify :: Options -> NixopsConfig -> IO ()
 modify o@Options{..} c@NixopsConfig{..} = do
-  printf ("Syncing Nix->state for deployment "%s%"\n") $ fromNixopsDepl cName
-  nixops o c "modify" $ Arg <$> cFiles
+  deplExists <- exists o c
+  if deplExists
+  then do
+    printf ("Modifying pre-existing deployment "%s%"\n") $ fromNixopsDepl cName
+    nixops o c "modify" $ Arg <$> cFiles
+  else do
+    printf ("Creating deployment "%s%"\n") $ fromNixopsDepl cName
+    nixops o c "create" $ Arg <$> deploymentFiles cEnvironment cTarget cElements
 
   printf ("Setting deployment arguments:\n")
   deplArgs <- computeFinalDeploymentArgs o c
@@ -712,7 +707,6 @@ fromscratch :: Options -> NixopsConfig -> IO ()
 fromscratch o c = do
   destroy o c
   delete o c
-  create o c
   defaultDeploy o c
 
 -- | Destroy elastic IPs corresponding to the nodes listed and reprovision cluster.
