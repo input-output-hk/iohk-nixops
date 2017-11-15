@@ -8,16 +8,6 @@ let
                || (isString x && builtins.substring 0 1 x == "/");
 
   cfg = config.services.io-buildkite-agent;
-  accessToken = if isPath cfg.token then readFile cfg.token else cfg.token;
-  configFile = pkgs.writeText "buildkite-agent.cfg"
-    ''
-      token="${accessToken}"
-      name="${cfg.name}"
-      meta-data="${cfg.meta-data}"
-      hooks-path="${pkgs.buildkite-agent}/share/hooks"
-      build-path="/var/lib/buildkite-agent/builds"
-      bootstrap-script="${pkgs.buildkite-agent}/share/bootstrap.sh"
-    '';
 in
 
 {
@@ -87,6 +77,10 @@ in
                               then "cp -f ${x} ${target}; "
                               else "echo '${x}' > ${target}; ")
                              + "${pkgs.coreutils}/bin/chmod ${toString perms} ${target}; ";
+          catOrLiteral     = x:
+                             (if isPath x
+                              then "$(cat ${toString x})"
+                              else "${x}");
       in
       { description = "Buildkite Agent";
         wantedBy = [ "multi-user.target" ];
@@ -96,10 +90,19 @@ in
             ${pkgs.coreutils}/bin/mkdir -m 0700 -p /var/lib/buildkite-agent/.ssh
             ${copyOrEcho cfg.openssh.privateKey "/var/lib/buildkite-agent/.ssh/id_rsa"     600}
             ${copyOrEcho cfg.openssh.publicKey  "/var/lib/buildkite-agent/.ssh/id_rsa.pub" 600}
+
+            cat > "/var/lib/buildkite-agent/buildkite-agent.cfg" <<EOF
+            token="${catOrLiteral cfg.token}"
+            name="${cfg.name}"
+            meta-data="${cfg.meta-data}"
+            hooks-path="${pkgs.buildkite-agent}/share/hooks"
+            build-path="/var/lib/buildkite-agent/builds"
+            bootstrap-script="${pkgs.buildkite-agent}/share/bootstrap.sh"
+            EOF
           '';
 
         serviceConfig =
-          { ExecStart = "${pkgs.buildkite-agent}/bin/buildkite-agent start --config ${configFile}";
+          { ExecStart = "${pkgs.buildkite-agent}/bin/buildkite-agent start --config /var/lib/buildkite-agent/buildkite-agent.cfg";
             User = "buildkite-agent";
             RestartSec = 5;
             Restart = "on-failure";
