@@ -43,44 +43,14 @@ in {
 
     environment.systemPackages = [ iohk-pkgs.iohk-ops ];
 
-    users = {
-      users.staging = {
-        description     = "cardano staging";
-        group           = "staging";
-        createHome      = true;
-        isNormalUser = true;
-        openssh.authorizedKeys.keys = devKeys;
-      };
-      groups.staging = {};
-
-      users.live-production = {
-        description     = "cardano live-production";
-        group           = "live-production";
-        createHome      = true;
-        isNormalUser = true;
-        openssh.authorizedKeys.keys = devOpsKeys;
-      };
-      groups.live-production = {};
-    };
-
-    services.tarsnap = {
-      enable = true;
-      keyfile = "/var/lib/keys/tarsnap";
-      archives.cardano-deployer = {
-        directories = [
-          "/home/staging/.ec2-keys"
-          "/home/staging/.aws"
-          "/home/staging/.nixops"
-          "/home/live-production/.ec2-keys"
-          "/home/live-production/.aws"
-          "/home/live-production/.nixops"
-          "/etc/"
-        ];
-      };
-    };
-
     networking.firewall.allowedTCPPortRanges = [
       { from = 24962; to = 25062; }
     ];
+  };
+  resources = {
+    datadogMonitors = (with (import ./../modules/datadog-monitors.nix); {
+      disk = mkMonitor disk_monitor;
+      ntp = mkMonitor ntp_monitor;
+    });
   };
 }

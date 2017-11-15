@@ -74,5 +74,9 @@ in rec {
         }];
       };
     };
+    elasticIPs = {
+      hydra-ip    = { inherit region accessKeyId; };
+      cardanod-ip = { inherit region accessKeyId; };
+    };
   };
 }

@@ -34,17 +34,30 @@ in {
       destDir = "/var/lib/keys";
     };
 
-    deployment.ec2.elasticIPv4 = resources.elasticIPs.cardanod-ip;
-  };
-
-  resources = {
-    datadogMonitors = (with (import ./../modules/datadog-monitors.nix); {
-      disk = mkMonitor disk_monitor;
-      ntp = mkMonitor ntp_monitor;
-    });
-    elasticIPs = {
-      hydra-ip    = { inherit region accessKeyId; };
-      cardanod-ip = { inherit region accessKeyId; };
+    users = {
+      users.live-production = {
+        description     = "cardano live-production";
+        group           = "live-production";
+        createHome      = true;
+        isNormalUser = true;
+        openssh.authorizedKeys.keys = devOpsKeys;
+      };
+      groups.live-production = {};
     };
+
+    services.tarsnap = {
+      enable = true;
+      keyfile = "/var/lib/keys/tarsnap";
+      archives.cardano-deployer = {
+        directories = [
+          "/home/live-production/.ec2-keys"
+          "/home/live-production/.aws"
+          "/home/live-production/.nixops"
+          "/etc/"
+        ];
+      };
+    };
+
+    deployment.ec2.elasticIPv4 = resources.elasticIPs.cardanod-ip;
   };
 }
