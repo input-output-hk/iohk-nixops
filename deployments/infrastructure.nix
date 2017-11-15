@@ -36,7 +36,7 @@ in {
       name   = name;
       openssh.privateKey = "/run/keys/buildkite-ssh-private";
       openssh.publicKey  = "/run/keys/buildkite-ssh-public";
-      token              = ./. + "/../static/buildkite-token";
+      token              = "/run/keys/buildkite-token";
     };
     deployment.keys = {
       buildkite-ssh-private = {
@@ -45,6 +45,10 @@ in {
       };
       buildkite-ssh-public = {
         keyFile = ./. + "/../static/buildkite-ssh.pub";
+        user    = "buildkite-agent";
+      };
+      buildkite-token = {
+        keyFile = ./. + "/../static/buildkite-token";
         user    = "buildkite-agent";
       };
     };
