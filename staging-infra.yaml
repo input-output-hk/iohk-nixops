@@ -1,0 +1,28 @@
+args:
+  configurationKey:
+    tag: NixStr
+    contents: testnet_staging_full
+  EmurgoaccessKeyId:
+    tag: NixStr
+    contents: cardano-deployer
+  systemStart:
+    tag: NixInt
+    contents: 1510751206
+  CFaccessKeyId:
+    tag: NixStr
+    contents: cardano-deployer
+  IOHKaccessKeyId:
+    tag: NixStr
+    contents: cardano-deployer
+gen-cmdline: new -c staging-infra.yaml -e staging staging-infra infra
+environment: Staging
+topology: topology-staging.yaml
+name: staging-infra
+files:
+- deployments/infrastructure-env-staging.nix
+- deployments/keypairs.nix
+- deployments/infrastructure.nix
+- deployments/infrastructure-target-aws.nix
+elements:
+- Infra
+target: AWS

@@ -91,10 +91,13 @@ envSettings env =
       , envDefaultConfigurationKey = "testnet_staging_full"
       , envDefaultConfig     = "staging-testnet.yaml"
       , envDefaultTopology   = "topology-staging.yaml"
-      , envDeploymentFiles   = [ (Every,          All, "deployments/security-groups.nix")
+      , envDeploymentFiles   = [ (Nodes,          All, "deployments/security-groups.nix")
+                               , (Explorer,       All, "deployments/security-groups.nix")
+                               , (ReportServer,   All, "deployments/security-groups.nix")
                                , (Nodes,          All, "deployments/cardano-nodes-env-staging.nix")
                                , (Explorer,       All, "deployments/cardano-explorer-env-staging.nix")
                                , (ReportServer,   All, "deployments/report-server-env-staging.nix")
+                               , (Infra,          All, "deployments/infrastructure-env-staging.nix")
                                ] <> deplAgnosticFiles}
     Production  -> EnvSettings
       { envDeployerUser      = "live-production"
