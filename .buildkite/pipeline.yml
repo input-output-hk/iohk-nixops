@@ -1,0 +1,8 @@
+steps:
+  - label: ':rocket: Ex-Travis'
+    command: 'TRAVIS_COMMIT=${BUILDKITE_COMMIT} TRAVIS_BRANCH=${BUILDKITE_BRANCH} scripts/travis.sh'
+    branches: '497-kite'
+    env:
+      NIX_REMOTE: daemon
+      PATH: bin:/run/current-system/sw/bin
+      TRAVIS_OS_NAME: linux
