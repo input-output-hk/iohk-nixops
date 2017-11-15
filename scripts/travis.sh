@@ -2,6 +2,9 @@
 
 set -xeu
 
+# https://github.com/NixOS/nixops/issues/693
+export BOTO_CONFIG=/dev/null
+
 source ./scripts/set_nixpath.sh
 
 IOHK_OPS=${1:-$(nix-build -A iohk-ops)/bin/iohk-ops}
