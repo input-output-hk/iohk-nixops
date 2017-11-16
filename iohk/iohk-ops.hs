@@ -165,6 +165,7 @@ centralCommandParser =
      --                            <$> (NixopsCmd <$> argText "CMD" "Nixops command to invoke")
      --                            <*> ???)) -- should we switch to optparse-applicative?
      ("modify",                 "Update cluster state with the nix expression changes",             pure Modify)
+   , ("create",                 "Same as modify",                                                   pure Modify)
    , ("deploy",                 "Deploy the whole cluster",
                                 Deploy
                                 <$> flag NoExplorerRebuild "no-explorer-rebuild" 'n' "Don't rebuild explorer frontend.  WARNING: use this only if you know what you are doing!"
