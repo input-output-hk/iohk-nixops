@@ -2,6 +2,9 @@
 
 set -xeu
 
+# https://github.com/NixOS/nixops/issues/693
+export BOTO_CONFIG=/dev/null
+
 source ./scripts/set_nixpath.sh
 
 IOHK_OPS=${1:-$(nix-build -A iohk-ops)/bin/iohk-ops}
@@ -18,8 +21,9 @@ WITH_INFRA=${9:-true}
 # PREPARE
 mkdir -p cardano-sl/explorer/frontend/dist
 
+touch static/buildkite-token
 touch static/github_token
-touch static/id_buildfarm
+touch static/id_buildfarm static/id_buildfarm.pub
 touch static/datadog-api.secret static/datadog-application.secret
 
 test -f static/tarsnap-cardano-deployer.secret ||
