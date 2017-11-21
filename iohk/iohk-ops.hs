@@ -311,9 +311,6 @@ runNew o@Options{..} New{..} args = do
   echo $ "-- " <> (unsafeTextToLine $ configFilename) <> " is:"
   cmd o "cat" [configFilename]
 
-  -- nixops create:
-  Ops.modify o config
-
   -- generate dev-keys & ensure secrets exist:
   when (tEnvironment == Development) $ do
     let secrets = [ "static/github_token"
