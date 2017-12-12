@@ -71,13 +71,13 @@ in {
         input-output-hk = ${builtins.readFile ../static/github_token}
       </github_authorization>
       <githubstatus>
-        jobs = serokell:iohk-nixops.*
-        inputs = jobsets
+        jobs = serokell:cardano.*
+        inputs = cardano
         excludeBuildFromContext = 1
       </githubstatus>
       <githubstatus>
-        jobs = serokell:cardano.*
-        inputs = cardano
+        jobs = serokell:iohk-nixops.*
+        inputs = jobsets
         excludeBuildFromContext = 1
       </githubstatus>
     '';
