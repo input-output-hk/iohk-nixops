@@ -19,6 +19,11 @@ mkDerivation {
     optional-args optparse-applicative resourcet safe system-filepath
     text turtle unix unordered-containers utf8-string vector yaml
   ];
-  testHaskellDepends = [ base hspec universum ];
+  testHaskellDepends = [
+    aeson amazonka amazonka-s3 ansi-terminal base bytestring cassava
+    directory git hspec http-client http-client-tls http-types lens
+    managed resourcet system-filepath text turtle universum
+    unordered-containers yaml
+  ];
   license = stdenv.lib.licenses.bsd3;
 }
