@@ -12,4 +12,9 @@ params:
 
   # Initial block is big enough to hold 3 months of transactions
   deployment.ec2.ebsInitialRootDiskSize = mkForce 700;
+
+  deployment.ec2.instanceType =
+    mkForce (if params.typeIsRelay && params.public == true
+             then "m4.large"
+             else "t2.large");
 }

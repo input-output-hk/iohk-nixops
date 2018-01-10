@@ -4,6 +4,7 @@
 *prof
 keys/*.key
 /test-*.yaml
+config.yaml
 
 .stack-work
 /cardano-sl/
@@ -19,6 +20,7 @@ logs-analyze/
 static/*.secret
 static/github_token
 static/id_buildfarm
+github_token
 
 image
 result
@@ -29,3 +31,5 @@ pkgs/stack2nix
 /topology.nix
 txgen.log
 txgen.json
+
+.terraform

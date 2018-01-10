@@ -7,8 +7,8 @@ with import ./../lib.nix;
     global = {
       allocateElasticIP            = false;
       enableEkgWeb                 = true;
-      dnsHostname                  = null;
-      dnsDomainname                = mkForce null;
+      dnsHostname                  = "${name}-${config.deployment.name}";
+      dnsDomainname                = "aws.iohkdev.io";
       omitDetailedSecurityGroups   = true;
     };
 

@@ -1,7 +1,10 @@
-{ mkDerivation, aeson, aeson-pretty, base, bytestring, cassava
-, containers, dns, hourglass, lens, lens-aeson, mtl, optional-args
-, safe, stdenv, system-filepath, text, turtle, unordered-containers
-, utf8-string, vector, yaml
+{ mkDerivation, aeson, aeson-pretty, amazonka, amazonka-s3
+, ansi-terminal, base, bytestring, cassava, containers, directory
+, dns, filepath, git, hourglass, hspec, http-client
+, http-client-tls, http-types, lens, lens-aeson, managed, mtl
+, optional-args, optparse-applicative, resourcet, safe, stdenv
+, system-filepath, text, turtle, universum, unix
+, unordered-containers, utf8-string, vector, yaml
 }:
 mkDerivation {
   pname = "iohk-ops";
@@ -10,9 +13,12 @@ mkDerivation {
   isLibrary = false;
   isExecutable = true;
   executableHaskellDepends = [
-    aeson aeson-pretty base bytestring cassava containers dns hourglass
-    lens lens-aeson mtl optional-args safe system-filepath text turtle
-    unordered-containers utf8-string vector yaml
+    aeson aeson-pretty amazonka amazonka-s3 ansi-terminal base
+    bytestring cassava containers directory dns filepath git hourglass
+    http-client http-client-tls http-types lens lens-aeson managed mtl
+    optional-args optparse-applicative resourcet safe system-filepath
+    text turtle unix unordered-containers utf8-string vector yaml
   ];
+  testHaskellDepends = [ base hspec universum ];
   license = stdenv.lib.licenses.bsd3;
 }

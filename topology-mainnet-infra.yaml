@@ -1,8 +1,0 @@
-nodes:
-  'mainnet-deployer':
-    type: relay
-    region: eu-central-1
-    static-routes: [['mainnet-deployer']]
-    host: mainnet-deployer.cardano
-    port: 3000
-    org: IOHK

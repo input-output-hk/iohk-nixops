@@ -10,7 +10,7 @@
     "emailoverride": "",
     "keepnr": 3,
     "inputs": {
-         "src": { "type": "git", "value": "https://github.com/input-output-hk/pos-prototype-deployment.git", "emailresponsible": false }
+         "src": { "type": "git", "value": "https://github.com/input-output-hk/iohk-ops.git develop", "emailresponsible": false }
          ,"nixpkgs": { "type": "git", "value": "https://github.com/NixOS/nixpkgs-channels.git nixos-16.09", "emailresponsible": false }
          ,"nixopsPrsJSON": { "type": "githubpulls", "value": "input-output-hk iohk-nixops", "emailresponsible": false }
          ,"cardanoPrsJSON": { "type": "githubpulls", "value": "input-output-hk cardano-sl", "emailresponsible": false }

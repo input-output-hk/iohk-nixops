@@ -58,17 +58,17 @@ rec {
   cpu_monitor = {
     name = "High CPU usage";
     type = "metric alert";
-    query = config: "avg(last_5m):avg:system.load.norm.1{env:${config.deployment.arguments.environment},depl:${config.deployment.name},!host:iohk-infra.ec2.cardano-deployer,!host:iohk-infra.ec2.hydra} by {host} > 0.9";
+    query = config: "avg(last_5m):avg:system.load.norm.1{depl:${config.deployment.name},!host:iohk-infra.ec2.cardano-deployer,!host:iohk-infra.ec2.hydra} by {host} > 1.1";
     monitorOptions.thresholds = {
-      warning = "0.75";
-      critical = "0.9";
+      warning = "1";
+      critical = "1.1";
     };
   };
 
   disk_monitor = {
     name = "High disk usage";
     type = "metric alert";
-    query = config: "max(last_5m):avg:system.disk.in_use{env:${config.deployment.arguments.environment},depl:${config.deployment.name},!host:mainnet.ec2.report-server} by {host,device} > 0.9";
+    query = config: "max(last_5m):avg:system.disk.in_use{depl:${config.deployment.name},!host:mainnet.ec2.report-server} by {host,device} > 0.9";
     monitorOptions.thresholds = {
       warning = "0.8";
       critical = "0.9";
@@ -78,7 +78,7 @@ rec {
   ram_monitor = {
     name = "RAM is running low";
     type = "metric alert";
-    query = config: "avg(last_1m):avg:system.mem.pct_usable{env:${config.deployment.arguments.environment},depl:${config.deployment.name}} by {host} < 0.2";
+    query = config: "avg(last_1m):avg:system.mem.pct_usable{depl:${config.deployment.name}} by {host} < 0.2";
     monitorOptions.thresholds = {
       warning = "0.5";
       critical = "0.2";
@@ -88,7 +88,7 @@ rec {
   ntp_monitor = {
     name = "Clock out of sync with NTP";
     type = "service check";
-    query = config: "\"ntp.in_sync\".over(\"env:${config.deployment.arguments.environment},depl:${config.deployment.name}\").by(\"host\").last(2).count_by_status()";
+    query = config: "\"ntp.in_sync\".over(\"depl:${config.deployment.name}\").by(\"host\").last(2).count_by_status()";
     monitorOptions.thresholds = {
       critical = 1;
     };
@@ -97,7 +97,7 @@ rec {
   cardano_node_simple_process_monitor = {
     name = "cardano-node-simple process is down";
     type = "service check";
-    query = config: "\"process.up\".over(\"env:${config.deployment.arguments.environment},depl:${config.deployment.name}\",\"process:cardano-node-simple\").exclude(\"host:mainnet.ec2.explorer\").by(\"host\",\"process\").last(5).count_by_status()";
+    query = config: "\"process.up\".over(\"depl:${config.deployment.name}\",\"process:cardano-node-simple\").exclude(\"host:mainnet.ec2.explorer\").by(\"host\",\"process\").last(5).count_by_status()";
     monitorOptions.thresholds = {
       warning = 2;
       critical = 4;
@@ -108,7 +108,7 @@ rec {
   cardano_explorer_process_monitor = {
     name = "cardano-explorer process is down";
     type = "service check";
-    query = config: "\"process.up\".over(\"env:${config.deployment.arguments.environment},depl:${config.deployment.name}\",\"process:cardano-explorer\").by(\"host\",\"process\").last(6).count_by_status()";
+    query = config: "\"process.up\".over(\"depl:${config.deployment.name}\",\"process:cardano-explorer\").by(\"host\",\"process\").last(6).count_by_status()";
     monitorOptions.thresholds = {
       warning = 4;
       critical = 5;
@@ -119,7 +119,7 @@ rec {
   chain_quality_monitor = {
     name = "Degraded Chain Quality over last 2160 blocks";
     type = "metric alert";
-    query = config: "max(last_1m):avg:cardano.chain_quality_last_k_2160_blocks{depl:${config.deployment.name}} by {host} < 99";
+    query = config: "max(last_3m):avg:cardano.chain_quality_last_k_2160_blocks{depl:${config.deployment.name}} by {host} < 99";
     monitorOptions = {
       notify_no_data = true;
       no_data_timeframe = 5;
@@ -133,7 +133,7 @@ rec {
   failed_cherish_loop_monitor = {
     name = "Failed Cherish Loop";
     type = "query alert";
-    query = config: "max(last_1m):sum:cardano.queue.FailedCherishLoop{depl:${config.deployment.name}} by {host}.as_count() > 0";
+    query = config: "max(last_1m):sum:cardano.queue.FailedCherishLoop{depl:${config.deployment.name}} by {host} > 0";
     message = "Looping indefinitely while trying to re-enqueue a message that failed to send.\n\nAs stated in [queue metrics](https://github.com/serokell/time-warp-nt/blob/master/QUEUE_METRICS.md), \"Any value above zero for this counter indicates queue misconfiguration.\"\n\n${pagerDutyPolicy.normal}";
     monitorOptions = {
       notify_no_data = true;

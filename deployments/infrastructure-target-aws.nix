@@ -25,6 +25,9 @@ in rec {
   hydra-build-slave-1 = hydra;
   hydra-build-slave-2 = hydra;
 
+  buildkite-agent-1   = hydra;
+  buildkite-agent-2   = hydra;
+
   cardano-deployer = { config, pkgs, resources, ... }: {
     imports = [
       ./../modules/amazon-base.nix

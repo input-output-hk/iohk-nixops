@@ -5,6 +5,11 @@ with (import ./../lib.nix);
 let
   iohk-pkgs = import ../default.nix {};
 in {
+  boot.kernel.sysctl = {
+    ## DEVOPS-592
+    "kernel.unprivileged_bpf_disabled" = 1;
+  };
+
   environment.systemPackages = with pkgs;
     # nixopsUnstable: wait for 1.5.1 release
     [ git tmux vim sysstat iohk-pkgs.nixops lsof ncdu tree mosh tig

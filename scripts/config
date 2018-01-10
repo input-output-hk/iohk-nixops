@@ -1,0 +1,16 @@
+# from daedalus/installers/configuration.yaml
+applicationVersion=3
+lastKnownBlockVersion=0.1.0
+
+# edit these to fit the update
+DARWIN_INSTALLER=6c6b92e1943d39f43c25f2258d02e0e7356cc1890d8547e0f750e27ae393db2a
+WIN64_INSTALLER=9a9ade13e6b605d55f0871acc10c4a5fcb25217ea32c9414dbfcdabc0f534968
+CONFIG_KEY=mainnet_full
+RELAY_IP=18.194.141.17
+
+VOTER_INDEX=1
+
+COMMONOPTS="--system-start 0 --configuration-file ../cardano-sl/node/configuration.yaml --configuration-key ${CONFIG_KEY}"
+AUXXOPTS="--log-config ../cardano-sl/scripts/log-templates/log-config-qa.yaml --logs-prefix logs/aux-update.1.0.1 --db-path aux-update-1.0.1 --peer ${RELAY_IP}:3000"
+
+set -x

@@ -45,3 +45,43 @@ executable iohk-ops
                      , utf8-string
                      , vector >=0.11
                      , yaml >=0.8
+                     , http-client-tls
+                     , optparse-applicative
+                     , resourcet
+                     , http-client
+                     , managed
+                     , http-types
+                     , amazonka
+                     , amazonka-s3
+                     , filepath
+                     , git
+                     , directory
+                     , ansi-terminal
+test-suite iohk-ops-test
+  main-is:          Test.hs
+  default-language: Haskell2010
+  other-modules:    Test
+  type:             exitcode-stdio-1.0
+  build-depends:    hspec
+  build-depends:    base
+                  , universum
+                  , turtle
+                  , text
+                  , http-types
+                  , aeson
+                  , http-client-tls
+                  , http-client
+                  , bytestring
+                  , unordered-containers
+                  , yaml
+                  , cassava
+                  , directory
+                  , lens
+                  , ansi-terminal
+                  , git
+                  , resourcet
+                  , amazonka-s3
+                  , amazonka
+                  , system-filepath
+                  , managed
+  hs-source-dirs:   test .

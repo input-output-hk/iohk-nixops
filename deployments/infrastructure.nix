@@ -3,13 +3,20 @@
 with (import ./../lib.nix);
 let
   iohk-pkgs = import ../default.nix {};
-  mkHydraBuildSlave = { config, pkgs, ... }: {
+  mkHydraBuildSlave = { config, name, pkgs, ... }: {
     imports = [
       ./../modules/common.nix
       ./../modules/hydra-slave.nix
     ];
   };
+  mkBuildkiteAgent = { ... }: {
+    imports = [
+      ./../modules/common.nix
+      ./../modules/buildkite-agent.nix
+    ];
+  };
 in {
+  require = [ ./ugly-fix.nix ];
   hydra = { config, pkgs, ... }: {
     # On first setup:
 
@@ -25,6 +32,9 @@ in {
 
   hydra-build-slave-1 = mkHydraBuildSlave;
   hydra-build-slave-2 = mkHydraBuildSlave;
+
+  buildkite-agent-1   = mkBuildkiteAgent;
+  buildkite-agent-2   = mkBuildkiteAgent;
 
   cardano-deployer = { config, pkgs, ... }: {
     imports = [

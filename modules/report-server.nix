@@ -1,6 +1,6 @@
 with (import ./../lib.nix);
 
-globals: imports: params:
+params:
 { pkgs, config, resources, options, ...}:
 
 let
@@ -40,10 +40,13 @@ in {
     deployment.ec2.region         = mkForce params.region;
     deployment.ec2.accessKeyId    = params.accessKeyId;
     deployment.ec2.keyPair        = resources.ec2KeyPairs.${params.keyPairName};
-    deployment.ec2.securityGroups = optionals (! config.global.omitDetailedSecurityGroups)
-      (map (resolveSGName resources) [
-         "allow-to-report-server-${config.deployment.ec2.region}"
-       ]);
+    deployment.ec2.securityGroups =
+      let sgNames = [ "allow-to-report-server-${config.deployment.ec2.region}" ];
+      in map (resolveSGName resources)
+         (if config.global.omitDetailedSecurityGroups
+          then [ "allow-all-${params.region}-${params.org}" ]
+          else sgNames);
+
     deployment.ec2.ebsInitialRootDiskSize = 200;
 
     networking.firewall.allowedTCPPorts = [
@@ -63,6 +66,7 @@ in {
       description   = "Cardano report server";
       after         = [ "network.target" ];
       wantedBy = [ "multi-user.target" ];
+      unitConfig.RequiresMountsFor = cfg.logsdir;
       serviceConfig = {
         User = "report-server";
         Group = "report-server";

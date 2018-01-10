@@ -32,12 +32,7 @@ import           Data.String
 import           Data.Text
 import           Data.Word
 
-data NodeType = NodeCore | NodeRelay | NodeEdge
-  deriving (Show)
-data NodeAddr a =
-    NodeAddrExact BS.C8.ByteString (Maybe Word16)
-  | NodeAddrDNS a (Maybe Word16)
-  deriving (Show)
+import           Types
 --
 -- XXX: end of added code
 
@@ -59,19 +54,11 @@ data AllStaticallyKnownPeers = AllStaticallyKnownPeers {
   }
   deriving (Show)
 
-newtype NodeName = NodeName Text
-    deriving (Show, Ord, Eq, IsString)
-
 newtype NodeRegion = NodeRegion Text
     deriving (Show, Ord, Eq, IsString)
 
 newtype NodeRoutes = NodeRoutes [[NodeName]]
     deriving (Show)
-
-data NodeOrg = IOHK | CF | Emurgo
-    deriving (Bounded, Eq, Enum, G.Generic, Read, Show)
-instance FromJSON NodeOrg
-instance ToJSON NodeOrg
 
 newtype NodeZone = NodeZone Text
     deriving (Show, Ord, Eq, G.Generic, IsString)
@@ -181,19 +168,8 @@ instance ToJSON KademliaAddress where
 instance FromJSON NodeRegion where
   parseJSON = fmap NodeRegion . parseJSON
 
-instance FromJSON NodeName where
-  parseJSON = fmap NodeName . parseJSON
-
 instance FromJSON NodeRoutes where
   parseJSON = fmap NodeRoutes . parseJSON
-
-instance FromJSON NodeType where
-  parseJSON = A.withText "NodeType" $ \typ -> do
-      case unpack typ of
-        "core"     -> return NodeCore
-        "edge"     -> return NodeEdge
-        "relay"    -> return NodeRelay
-        _otherwise -> fail $ "Invalid NodeType " ++ show typ
 
 -- instance FromJSON (DnsDomains DNS.Domain) where
 --   parseJSON = fmap DnsDomains . parseJSON

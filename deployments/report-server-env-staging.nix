@@ -2,6 +2,7 @@
 let nodeMap = { inherit (globals.fullMap) report-server; }; in
 
 {
+  require = [ ./report-server-bucket-storage.nix ];
   report-server = { config, resources, ...}: {
     imports = [
       ./../modules/staging.nix

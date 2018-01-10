@@ -1,0 +1,220 @@
+nodes:
+  'p-b-50':
+    region: ap-northeast-1
+    zone: ap-northeast-1a
+    type: relay
+    org: IOHK
+    host: p-b-50.cardano
+    dynamic-subscribe: [[{ "host":"r-b-1.cardano-mainnet.iohk.io"}, { "host":"r-c-1.cardano-mainnet.iohk.io"}, { "host":"r-c-2.cardano-mainnet.iohk.io"}],
+                        [{ "host":"r-b-2.cardano-mainnet.iohk.io"}, { "host":"r-d-1.cardano-mainnet.iohk.io"}, { "host":"r-a-1.cardano-mainnet.iohk.io"}, { "host":"r-a-2.cardano-mainnet.iohk.io"}]]
+    kademlia: false
+    public: true
+
+  'p-b-51':
+    region: ap-northeast-1
+    zone: ap-northeast-1c
+    type: relay
+    org: IOHK
+    host: p-b-51.cardano
+    dynamic-subscribe: [[{ "host":"r-b-1.cardano-mainnet.iohk.io"}, { "host":"r-a-1.cardano-mainnet.iohk.io"}, { "host":"r-c-1.cardano-mainnet.iohk.io"}],
+                        [{ "host":"r-b-2.cardano-mainnet.iohk.io"}, { "host":"r-a-2.cardano-mainnet.iohk.io"}, { "host":"r-c-2.cardano-mainnet.iohk.io"}, { "host":"r-d-1.cardano-mainnet.iohk.io"}]]
+    kademlia: false
+    public: true
+
+  'p-b-52':
+    region: ap-northeast-1
+    zone: ap-northeast-1a
+    type: relay
+    org: IOHK
+    host: p-b-52.cardano
+    dynamic-subscribe: [[{ "host":"r-b-1.cardano-mainnet.iohk.io"}, { "host":"r-c-1.cardano-mainnet.iohk.io"}, { "host":"r-a-2.cardano-mainnet.iohk.io"}],
+                        [{ "host":"r-b-2.cardano-mainnet.iohk.io"}, { "host":"r-a-1.cardano-mainnet.iohk.io"}, { "host":"r-c-2.cardano-mainnet.iohk.io"}, { "host":"r-d-1.cardano-mainnet.iohk.io"}]]
+    kademlia: false
+    public: true
+
+  'p-b-53':
+    region: ap-northeast-1
+    zone: ap-northeast-1c
+    type: relay
+    org: IOHK
+    host: p-b-53.cardano
+    dynamic-subscribe: [[{ "host":"r-b-1.cardano-mainnet.iohk.io"}, { "host":"r-a-1.cardano-mainnet.iohk.io"}, { "host":"r-c-1-cardano-mainnet.iohk.io"}],
+                        [{ "host":"r-b-2.cardano-mainnet.iohk.io"}, { "host":"r-d-1.cardano-mainnet.iohk.io"}, { "host":"r-c-2.cardano-mainnet.iohk.io"}, { "host":"r-a-2.cardano-mainnet.iohk.io"}]]
+    kademlia: false
+    public: true
+
+  'p-b-54':
+    region: ap-northeast-1
+    zone: ap-northeast-1a
+    type: relay
+    org: IOHK
+    host: p-b-54.cardano
+    dynamic-subscribe: [[{ "host":"r-b-1.cardano-mainnet.iohk.io"}, { "host":"r-a-1.cardano-mainnet.iohk.io"}, { "host":"r-c-2.cardano-mainnet.iohk.io"}],
+                        [{ "host":"r-b-2.cardano-mainnet.iohk.io"}, { "host":"r-a-2.cardano-mainnet.iohk.io"}, { "host":"r-d-1.cardano-mainnet.iohk.io"}, { "host":"r-c-1.cardano-mainnet.iohk.io"}]]
+    kademlia: false
+    public: true
+
+  'p-b-55':
+    region: ap-northeast-1
+    zone: ap-northeast-1c
+    type: relay
+    org: IOHK
+    host: p-b-55.cardano
+    dynamic-subscribe: [[{ "host":"r-b-1.cardano-mainnet.iohk.io"}, { "host":"r-d-1.cardano-mainnet.iohk.io"}, { "host":"r-c-1-cardano-mainnet.iohk.io"}],
+                        [{ "host":"r-b-2.cardano-mainnet.iohk.io"}, { "host":"r-a-2.cardano-mainnet.iohk.io"}, { "host":"r-a-1.cardano-mainnet.iohk.io"}, { "host":"r-c-2.cardano-mainnet.iohk.io"}]]
+    kademlia: false
+    public: true
+
+  'p-b-56':
+    region: ap-northeast-1
+    zone: ap-northeast-1a
+    type: relay
+    org: IOHK
+    host: p-b-56.cardano
+    dynamic-subscribe: [[{ "host":"r-b-1.cardano-mainnet.iohk.io"}, { "host":"r-c-1.cardano-mainnet.iohk.io"}, { "host":"r-d-1.cardano-mainnet.iohk.io"}],
+                        [{ "host":"r-b-2.cardano-mainnet.iohk.io"}, { "host":"r-a-1-cardano-mainnet.iohk.io"}, { "host":"r-c-2.cardano-mainnet.iohk.io"}, { "host":"r-a-2.cardano-mainnet.iohk.io"}]]
+    kademlia: false
+    public: true
+
+  'p-b-57':
+    region: ap-northeast-1
+    zone: ap-northeast-1c
+    type: relay
+    org: IOHK
+    host: p-b-57.cardano
+    dynamic-subscribe: [[{ "host":"r-b-1.cardano-mainnet.iohk.io"}, { "host":"r-d-1.cardano-mainnet.iohk.io"}, { "host":"r-c-1.cardano-mainnet.iohk.io"}],
+                        [{ "host":"r-b-2.cardano-mainnet.iohk.io"}, { "host":"r-a-2.cardano-mainnet.iohk.io"}, { "host":"r-a-1.cardano-mainnet.iohk.io"}, { "host":"r-d-1.cardano-mainnet.iohk.io"}]]
+    kademlia: false
+    public: true
+
+  'p-b-58':
+    region: ap-northeast-1
+    zone: ap-northeast-1a
+    type: relay
+    org: IOHK
+    host: p-b-58.cardano
+    dynamic-subscribe: [[{ "host":"r-b-1.cardano-mainnet.iohk.io"}, { "host":"r-c-2.cardano-mainnet.iohk.io"}, { "host":"r-d-1.cardano-mainnet.iohk.io"}],
+                        [{ "host":"r-b-2.cardano-mainnet.iohk.io"}, { "host":"r-c-1.cardano-mainnet.iohk.io"}, { "host":"r-a-1.cardano-mainnet.iohk.io"}, { "host":"r-a-2.cardano-mainnet.iohk.io"}]]
+    kademlia: false
+    public: true
+
+  'p-b-59':
+    region: ap-northeast-1
+    zone: ap-northeast-1c
+    type: relay
+    org: IOHK
+    host: p-b-59.cardano
+    dynamic-subscribe: [[{ "host":"r-b-1.cardano-mainnet.iohk.io"}, { "host":"r-a-1.cardano-mainnet.iohk.io"}, { "host":"r-c-1.cardano-mainnet.iohk.io"}],
+                        [{ "host":"r-b-2.cardano-mainnet.iohk.io"}, { "host":"r-a-2.cardano-mainnet.iohk.io"}, { "host":"r-c-2.cardano-mainnet.iohk.io"}, { "host":"r-d-1.cardano-mainnet.iohk.io"}]]
+    kademlia: false
+    public: true
+
+  'p-c-50':
+    region: ap-southeast-1
+    zone: ap-southeast-1a
+    type: relay
+    org: IOHK
+    host: p-c-50.cardano
+    dynamic-subscribe: [[{ "host":"r-c-1.cardano-mainnet.iohk.io"}, { "host":"r-b-1.cardano-mainnet.iohk.io"}, { "host":"r-b-2.cardano-mainnet.iohk.io"}],
+                        [{ "host":"r-c-2.cardano-mainnet.iohk.io"}, { "host":"r-d-1.cardano-mainnet.iohk.io"}, { "host":"r-a-1.cardano-mainnet.iohk.io"}, { "host":"r-a-2.cardano-mainnet.iohk.io"}]]
+    kademlia: false
+    public: true
+
+  'p-c-51':
+    region: ap-southeast-1
+    zone: ap-southeast-1b
+    type: relay
+    org: IOHK
+    host: p-c-51.cardano
+    dynamic-subscribe: [[{ "host":"r-c-1.cardano-mainnet.iohk.io"}, { "host":"r-a-1.cardano-mainnet.iohk.io"}, { "host":"r-b-1.cardano-mainnet.iohk.io"}],
+                        [{ "host":"r-c-2.cardano-mainnet.iohk.io"}, { "host":"r-a-2.cardano-mainnet.iohk.io"}, { "host":"r-b-2.cardano-mainnet.iohk.io"}, { "host":"r-d-1.cardano-mainnet.iohk.io"}]]
+    kademlia: false
+    public: true
+
+  'p-c-52':
+    region: ap-southeast-1
+    zone: ap-southeast-1a
+    type: relay
+    org: IOHK
+    host: p-c-52.cardano
+    dynamic-subscribe: [[{ "host":"r-c-1.cardano-mainnet.iohk.io"}, { "host":"r-b-1.cardano-mainnet.iohk.io"}, { "host":"r-a-2.cardano-mainnet.iohk.io"}],
+                        [{ "host":"r-c-2.cardano-mainnet.iohk.io"}, { "host":"r-a-1.cardano-mainnet.iohk.io"}, { "host":"r-b-2.cardano-mainnet.iohk.io"}, { "host":"r-d-1.cardano-mainnet.iohk.io"}]]
+    kademlia: false
+    public: true
+
+  'p-c-53':
+    region: ap-southeast-1
+    zone: ap-southeast-1b
+    type: relay
+    org: IOHK
+    host: p-c-53.cardano
+    dynamic-subscribe: [[{ "host":"r-c-1.cardano-mainnet.iohk.io"}, { "host":"r-a-1.cardano-mainnet.iohk.io"}, { "host":"r-b-1-cardano-mainnet.iohk.io"}],
+                        [{ "host":"r-c-2.cardano-mainnet.iohk.io"}, { "host":"r-d-1.cardano-mainnet.iohk.io"}, { "host":"r-b-2.cardano-mainnet.iohk.io"}, { "host":"r-a-2.cardano-mainnet.iohk.io"}]]
+    kademlia: false
+    public: true
+
+  'p-c-54':
+    region: ap-southeast-1
+    zone: ap-southeast-1a
+    type: relay
+    org: IOHK
+    host: p-c-54.cardano
+    dynamic-subscribe: [[{ "host":"r-c-1.cardano-mainnet.iohk.io"}, { "host":"r-a-1.cardano-mainnet.iohk.io"}, { "host":"r-b-2.cardano-mainnet.iohk.io"}],
+                        [{ "host":"r-c-2.cardano-mainnet.iohk.io"}, { "host":"r-a-2.cardano-mainnet.iohk.io"}, { "host":"r-d-1.cardano-mainnet.iohk.io"}, { "host":"r-b-1.cardano-mainnet.iohk.io"}]]
+    kademlia: false
+    public: true
+
+  'p-c-55':
+    region: ap-southeast-1
+    zone: ap-southeast-1b
+    type: relay
+    org: IOHK
+    host: p-c-55.cardano
+    dynamic-subscribe: [[{ "host":"r-c-1.cardano-mainnet.iohk.io"}, { "host":"r-d-1.cardano-mainnet.iohk.io"}, { "host":"r-b-1-cardano-mainnet.iohk.io"}],
+                        [{ "host":"r-c-2.cardano-mainnet.iohk.io"}, { "host":"r-a-2.cardano-mainnet.iohk.io"}, { "host":"r-a-1.cardano-mainnet.iohk.io"}, { "host":"r-b-2.cardano-mainnet.iohk.io"}]]
+    kademlia: false
+    public: true
+
+  'p-c-56':
+    region: ap-southeast-1
+    zone: ap-southeast-1a
+    type: relay
+    org: IOHK
+    host: p-c-56.cardano
+    dynamic-subscribe: [[{ "host":"r-c-1.cardano-mainnet.iohk.io"}, { "host":"r-b-1.cardano-mainnet.iohk.io"}, { "host":"r-d-1.cardano-mainnet.iohk.io"}],
+                        [{ "host":"r-c-2.cardano-mainnet.iohk.io"}, { "host":"r-a-1-cardano-mainnet.iohk.io"}, { "host":"r-b-2.cardano-mainnet.iohk.io"}, { "host":"r-a-2.cardano-mainnet.iohk.io"}]]
+    kademlia: false
+    public: true
+
+  'p-c-57':
+    region: ap-southeast-1
+    zone: ap-southeast-1b
+    type: relay
+    org: IOHK
+    host: p-c-57.cardano
+    dynamic-subscribe: [[{ "host":"r-c-1.cardano-mainnet.iohk.io"}, { "host":"r-d-1.cardano-mainnet.iohk.io"}, { "host":"r-b-1.cardano-mainnet.iohk.io"}],
+                        [{ "host":"r-c-2.cardano-mainnet.iohk.io"}, { "host":"r-a-2.cardano-mainnet.iohk.io"}, { "host":"r-a-1.cardano-mainnet.iohk.io"}, { "host":"r-d-1.cardano-mainnet.iohk.io"}]]
+    kademlia: false
+    public: true
+
+  'p-c-58':
+    region: ap-southeast-1
+    zone: ap-southeast-1a
+    type: relay
+    org: IOHK
+    host: p-c-58.cardano
+    dynamic-subscribe: [[{ "host":"r-c-1.cardano-mainnet.iohk.io"}, { "host":"r-b-2.cardano-mainnet.iohk.io"}, { "host":"r-d-1.cardano-mainnet.iohk.io"}],
+                        [{ "host":"r-c-2.cardano-mainnet.iohk.io"}, { "host":"r-b-1.cardano-mainnet.iohk.io"}, { "host":"r-a-1.cardano-mainnet.iohk.io"}, { "host":"r-a-2.cardano-mainnet.iohk.io"}]]
+    kademlia: false
+    public: true
+
+  'p-c-59':
+    region: ap-southeast-1
+    zone: ap-southeast-1b
+    type: relay
+    org: IOHK
+    host: p-c-59.cardano
+    dynamic-subscribe: [[{ "host":"r-c-1.cardano-mainnet.iohk.io"}, { "host":"r-a-1.cardano-mainnet.iohk.io"}, { "host":"r-b-1.cardano-mainnet.iohk.io"}],
+                        [{ "host":"r-c-2.cardano-mainnet.iohk.io"}, { "host":"r-a-2.cardano-mainnet.iohk.io"}, { "host":"r-b-2.cardano-mainnet.iohk.io"}, { "host":"r-d-1.cardano-mainnet.iohk.io"}]]
+    kademlia: false
+    public: true

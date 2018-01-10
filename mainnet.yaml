@@ -17,6 +17,7 @@ args:
 gen-cmdline: manual changes from staging-testnet.yaml
 environment: Production
 topology: topology-production.yaml
+installer-bucket: update.cardano-mainnet.iohk.io
 name: mainnet
 files:
 - deployments/keypairs.nix

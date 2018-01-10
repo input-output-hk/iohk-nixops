@@ -1,0 +1,27 @@
+args:
+  configurationKey:
+    tag: NixStr
+    contents: mainnet_full
+  EmurgoaccessKeyId:
+    tag: NixStr
+    contents: mainnet-emurgo
+  CFaccessKeyId:
+    tag: NixStr
+    contents: mainnet-cf
+  IOHKaccessKeyId:
+    tag: NixStr
+    contents: mainnet-iohk
+gen-cmdline: manually written
+environment: Production
+topology: topology-bulk3.yaml
+name: relays3
+installer-bucket: none
+files:
+- deployments/keypairs.nix
+- deployments/security-groups.nix
+- deployments/cardano-nodes.nix
+- deployments/cardano-nodes-env-production.nix
+elements:
+- Nodes
+nixops: /nix/store/ii82khr2gqg2c0mdaycblssi1as3mp12-nixops-1.6pre0_abcdef/bin/nixops
+target: AWS
