@@ -19,8 +19,8 @@ let
       nixopsUnstable = pkgs.fetchFromGitHub {
         owner = "NixOS";
         repo = "nixops";
-        rev = "92034401b5291070a93ede030e718bb82b5e6da4";
-        sha256 = "139mmf8ag392w5mn419k7ajp3pgcz6q349n7vm7gsp3g4sck2jjn";
+        rev = "a6e608919bf57fd9b89985768693805dbbe53131";
+        sha256 = "1fnv270pv57xnnjxmvcnhjxb1zb691hxn107qs6vbd8rlhfj05if";
       };
     in (import "${nixopsUnstable}/release.nix" {
          nixpkgs = localLib.fetchNixPkgs;
