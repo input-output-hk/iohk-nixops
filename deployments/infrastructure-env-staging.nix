@@ -13,6 +13,10 @@ in {
       ./../modules/datadog.nix
     ];
 
+    ## 
+    security.acme.certs = mkForce {};
+    services.nginx.enable = mkForce false;
+
     services.dd-agent.tags = ["env:staging" "depl:${config.deployment.name}"];
 
     deployment.ec2.elasticIPv4 = resources.elasticIPs.hydra-ip;
