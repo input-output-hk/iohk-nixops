@@ -325,8 +325,8 @@ runNew o@Options{..} New{..} args = do
     else do
       generateStakeKeys o (clusterConfigurationKey config) "keys"
       sh $ do
-        k <- Turtle.find ((prefix "keys/keys-testnet/rich/key") <> (suffix ".sk"))
-          "keys/keys-testnet/rich"
+        k <- Turtle.find ((prefix "keys/generated-keys/rich/key") <> (suffix ".sk"))
+          "keys/generated-keys/rich"
         cp k $ "keys" </> Path.filename k
   echo "Cluster deployment has been prepared."
 
