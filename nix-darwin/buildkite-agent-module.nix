@@ -36,6 +36,7 @@ in {
       export PATH=\$PATH:/usr/bin:/usr/sbin
     '';
     extraConfig = ''
+      git-clean-flags=-fdxq
       # debug=true
       # priority=9
     '';
