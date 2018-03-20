@@ -35,7 +35,10 @@ let
   terraform = pkgs.terraform_0_11.withPlugins (ps: [ ps.aws ]);
   # we allow on purpose for cardano-sl to have it's own nixpkgs to avoid rebuilds
   cardano-sl-src = builtins.fromJSON (builtins.readFile ./cardano-sl-src.json);
-  cardano-sl-pkgs = import (pkgs.fetchgit cardano-sl-src) {
+  cardano-sl-pkgs =
+  # switch between fetchgit and a local clone of cardano-sl
+  import (pkgs.fetchgit cardano-sl-src) {
+  #import ./cardano-sl {
     gitrev = cardano-sl-src.rev;
     inherit enableDebugging enableProfiling;
   };

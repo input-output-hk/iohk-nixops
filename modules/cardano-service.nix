@@ -49,6 +49,8 @@ let
     "--configuration-key ${config.deployment.arguments.configurationKey}"
     "--topology ${cfg.topologyYaml}"
     "--node-id ${params.name}"
+    # ("--policies ${./../policy_relay.yaml}")
+    ("--policies " + (if ("c" == builtins.substring 0 1 "${params.name}") then "${./../policy_core.yaml}" else "${./../policy_relay.yaml}")) 
     (optionalString cfg.enableProfiling "+RTS -p -RTS")
   ];
 in {
@@ -176,13 +178,14 @@ in {
       nodeMinute = mod (cfg.nodeIndex * 4) 60;
     in {
       script = ''
-        /run/current-system/sw/bin/systemctl restart cardano-node
+        echo /run/current-system/sw/bin/systemctl restart cardano-node
       '';
       # Reboot cardano-node every 36h (except Mon->Tue gap which is 24h)
-      startAt = [
-        "Tue,Fri,Mon 13:${toString nodeMinute}"
-        "Thu,Sun     01:${toString nodeMinute}"
-      ];
+      #startAt = [
+      #  "Tue,Fri,Mon 13:${toString nodeMinute}"
+      #  "Thu,Sun     01:${toString nodeMinute}"
+      #];
+      startAt = lib.mkForce [];
     };
 
     systemd.services.cardano-node = {
@@ -212,6 +215,20 @@ in {
         WorkingDirectory = stateDir;
         PrivateTmp = true;
         Type = "notify";
+      };
+    };
+
+    systemd.services.cardano-node-recorder = {
+      description   = "recording metrics on cardano node service";
+      after         = [ "systemd.services.cardano-node" ];
+      wantedBy = optionals cfg.autoStart [ "multi-user.target" ];
+      path = [ pkgs.glibc pkgs.procps ];  # dependencies
+      script = ''
+        ${./../record-stats.sh} -exec ${cfg.executable} >> "${stateDir}/time-slave.log"
+      '';
+      serviceConfig = {
+        User = "cardano-node";
+        Group = "cardano-node";
       };
     };
   };

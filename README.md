@@ -51,3 +51,13 @@ the script or `ghci` for development.
 ### Run from anywhere
 
     $(nix-build --no-out-link https://github.com/input-output-hk/iohk-ops/archive/develop.tar.gz -A iohk-ops)/bin/iohk-ops --help
+
+### edge nodes - watch log
+
+> 10 nodes "edgenode-1", each has 10 wallets "cardano-node-[1-10]"
+
+    export NIXOPS_DEPLOYMENT=edgenodes-cluster
+    nixops ssh edgenode-1
+
+    journalctl -f -u cardano-node-1
+

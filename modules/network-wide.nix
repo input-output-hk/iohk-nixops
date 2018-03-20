@@ -2,7 +2,8 @@
 
 with import ./../lib.nix;
 {
-  config.deployment = {
+  config = mkIf (false) {
+  deployment = {
     ec2 = {
       elasticIPv4 = if config.global.allocateElasticIP
                     then resources.elasticIPs.${name + "-ip"} else "";
@@ -17,6 +18,7 @@ with import ./../lib.nix;
       accessKeyId = config.deployment.ec2.accessKeyId;
       hostName    = config.global.dnsHostname +"."+ config.global.dnsDomainname;
     };
+  };
   };
   options = {
     global = mkOption {

@@ -1,0 +1,9 @@
+wallet:
+  # these addresses certainly have to be adapted for a new environment
+  relays: [
+    [
+      addr: 35.156.233.94
+    ]
+  ]
+  valency: 1
+  fallbacks: 7
