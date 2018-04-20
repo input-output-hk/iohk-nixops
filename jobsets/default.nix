@@ -103,6 +103,7 @@ let
     cardano-sl = mkCardano "develop" nixpkgs-src.rev;
     cardano-sl-master = mkCardano "master" nixpkgs-src.rev;
     cardano-sl-1-0 = mkCardano "release/1.0.x" nixpkgs-src.rev;
+    cardano-sl-1-2 = mkCardano "release/1.2.0" nixpkgs-src.rev;
     daedalus = mkDaedalus "develop";
     iohk-nixops = mkNixops "master" nixpkgs-src.rev;
     iohk-nixops-staging = mkNixops "staging" nixpkgs-src.rev;
