@@ -13,6 +13,7 @@
     tokenPath              = "/run/keys/buildkite-token";
     meta-data              = "system=x86_64-linux";
     hooksPath              = "/var/lib/buildkite-agent/hooks";
+    runtimePackages        = with pkgs; [ gnutar gzip bzip2 xz ];
   };
   users.users.buildkite-agent.extraGroups = [ "keys" ];
 
