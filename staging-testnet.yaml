@@ -27,6 +27,7 @@ files:
 - deployments/cardano-nodes-env-staging.nix
 - deployments/cardano-explorer.nix
 - deployments/cardano-explorer-env-staging.nix
+- deployments/cardano-faucet.nix
 - deployments/report-server.nix
 - deployments/report-server-env-staging.nix
 elements:

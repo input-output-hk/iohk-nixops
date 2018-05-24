@@ -60,6 +60,7 @@ let topologySpec     = builtins.fromJSON (builtins.readFile topologyFile);
                        typeIsCore = nodeType == "core";
                       typeIsRelay = nodeType == "relay";
                    typeIsExplorer = name == "explorer";
+                   typeIsFaucet = name == "faucet";
                 typeIsRunsCardano = typeIsCore || typeIsRelay || typeIsExplorer;
                typeIsReportServer = name == "report-server";
                       accessKeyId = if elem org allOrgs
@@ -82,9 +83,10 @@ let topologySpec     = builtins.fromJSON (builtins.readFile topologyFile);
     ## Fuller map to include "other" nodes:
     ##
     explorerNV      = findFirst  (x: x.value.typeIsExplorer)     {}   indexed;
+    faucetNV        = findFirst  (x: x.value.typeIsFaucet)     {}   indexed;
     reportServerNV  = findFirst  (x: x.value.typeIsReportServer) {}   indexed;
     fullMap         = nodeMap // listToAttrs (builtins.filter (x: x != {})
-                                              [ explorerNV reportServerNV ]);
+                                              [ explorerNV faucetNV reportServerNV ]);
 in
 {
   inherit topologyYaml;
