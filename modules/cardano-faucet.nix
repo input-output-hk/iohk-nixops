@@ -17,7 +17,7 @@ let
       withdraw:          # logger for the withdraw action
         severity: Debug+   # severities withdraw logger
     '';
-  cfgFile = builtins.toFile "config.json" (builtins.toJSON cfg.faucet-config);
+  cfgFile = pkgs.writeText "config.json" (builtins.toJSON cfg.faucet-config);
   # walletCfg cribbed from cardano-benchmark
   walletCfg = {
     walletListen = "127.0.0.1:${toString walletPort}";

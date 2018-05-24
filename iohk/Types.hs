@@ -125,6 +125,7 @@ instance FromJSON NodeType where
 data Deployment
   = Every
   | Explorer
+  | Faucet
   | Infra
   | Nodes
   | ReportServer

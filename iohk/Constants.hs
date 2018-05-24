@@ -97,6 +97,7 @@ envSettings env =
                                , (Nodes,          All, "deployments/cardano-nodes-env-staging.nix")
                                , (Explorer,       All, "deployments/cardano-explorer-env-staging.nix")
                                , (ReportServer,   All, "deployments/report-server-env-staging.nix")
+                               , (Faucet,         All, "deployments/cardano-faucet.nix")
                                , (Infra,          All, "deployments/infrastructure-env-staging.nix")
                                ] <> deplAgnosticFiles}
     Production  -> EnvSettings
@@ -120,6 +121,7 @@ envSettings env =
       , envDeploymentFiles   = [ (Nodes,          All, "deployments/cardano-nodes-env-development.nix")
                                , (Explorer,       All, "deployments/cardano-explorer-env-development.nix")
                                , (ReportServer,   All, "deployments/report-server-env-development.nix")
+                               , (Faucet,         All, "deployments/cardano-faucet.nix")
                                ] <> deplAgnosticFiles}
     Any -> error "envSettings called with 'Any'"
 
