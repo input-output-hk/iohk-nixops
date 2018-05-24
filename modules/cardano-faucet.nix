@@ -6,8 +6,17 @@ let
   iohkpkgs = import ../. {};
   faucet-drv = iohkpkgs.cardano-sl-faucet;
   cfg = config.services.faucet;
+  tlsPath = fileName: "${cfg.home}/wallet/tls/${fileName}";
   walletPort = cfg.wallet-port;
   ekgPort = 8001;
+  loggingCfg = pkgs.writeText "logging.cfg"
+    ''
+    termSeveritiesErr: All
+    loggerTree:
+      severity: Info+   # severities for «root» logger
+      withdraw:          # logger for the withdraw action
+        severity: Debug+   # severities withdraw logger
+    '';
   cfgFile = builtins.toFile "config.json" (builtins.toJSON cfg.faucet-config);
   # walletCfg cribbed from cardano-benchmark
   walletCfg = {
@@ -57,9 +66,9 @@ in
             };
           };
           source-wallet-config = mkOption { type = path; };
-          logging-config = mkOption { type = path; };
-          public-certificate = mkOption { type = path; };
-          private-key = mkOption { type = path; };
+          logging-config = mkOption { type = path; default = loggingCfg; };
+          public-certificate = mkOption { type = path; default = tlsPath "server.cert"; };
+          private-key = mkOption { type = path; default = tlsPath "server.key"; };
 
         };
       };
