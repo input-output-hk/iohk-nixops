@@ -45,6 +45,8 @@ in
         options = {
           wallet-host = mkOption { type = str; default = "127.0.0.1"; };
           wallet-port = mkOption { type = int; default = 8090; };
+          payment-amount = mkOption { type = int; default = 1000; };
+          payment-variation = mkOption { type = int; default = 500; };
           port = mkOption {
             type = int;
             default = 8081 ;
