@@ -1,0 +1,13 @@
+diff --git a/src/lib/Hydra/Controller/Root.pm b/src/lib/Hydra/Controller/Root.pm
+index 234f73f4..0aae2c54 100644
+--- a/src/lib/Hydra/Controller/Root.pm
++++ b/src/lib/Hydra/Controller/Root.pm
+@@ -266,7 +266,7 @@ sub nar :Local :Args(1) {
+     else {
+         $path = $Nix::Config::storeDir . "/$path";
+ 
+-        gone($c, "Path " . $path . " is no longer available.") unless isValidPath($path);
++        notFound($c, "Path " . $path . " is no longer available.") unless isValidPath($path);
+ 
+         $c->stash->{current_view} = 'NixNAR';
+         $c->stash->{storePath} = $path;

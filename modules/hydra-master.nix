@@ -27,6 +27,7 @@ let
       patches = [
         ./chomp.patch
         ./hydra-nix-prefetch-git.patch
+        ./hydra-not-found.patch
       ];
     });
   };
