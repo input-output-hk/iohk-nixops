@@ -1,38 +1,34 @@
 args:
+  IOHKroute53accessKeyId:
+    tag: NixStr
+    contents: iohk
   configurationKey:
     tag: NixStr
-    contents: mainnet_dryrun_full
+    contents: testnet_staging_full
   EmurgoaccessKeyId:
     tag: NixStr
-    contents: fifth-party
+    contents: iohk
   systemStart:
     tag: NixInt
-    contents: 1506450213
+    contents: 1527696582
   CFaccessKeyId:
     tag: NixStr
-    contents: third-party
+    contents: iohk
   IOHKaccessKeyId:
     tag: NixStr
     contents: iohk
-gen-cmdline: template -c staging-testnet.yaml --environment staging --nixops /nix/store/mb4rfbkliwjvcdcnqzgg4bgi45i8pb3s-nixops-1.6pre0_abcdef/bin/nixops
-  --here staging nodes reportserver explorer
+gen-cmdline: new ben-test-faucet -e staging Nodes Faucet
 environment: Staging
+installer-bucket: default-bucket
 topology: topology-staging.yaml
-installer-bucket: update-awstest.iohkdev.io
-name: rc-staging
+name: ben-test-faucet
 files:
-- deployments/keypairs.nix
 - deployments/security-groups.nix
-- deployments/cardano-nodes.nix
 - deployments/cardano-nodes-env-staging.nix
-- deployments/cardano-explorer.nix
-- deployments/cardano-explorer-env-staging.nix
-- deployments/cardano-faucet.nix
-- deployments/report-server.nix
-- deployments/report-server-env-staging.nix
+- deployments/keypairs.nix
+- deployments/cardano-nodes.nix
+- deployments/faucet-env-staging.nix
 elements:
 - Nodes
-- Explorer
-- ReportServer
-nixops: /nix/store/mb4rfbkliwjvcdcnqzgg4bgi45i8pb3s-nixops-1.6pre0_abcdef/bin/nixops
+- Faucet
 target: AWS

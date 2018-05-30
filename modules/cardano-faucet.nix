@@ -1,6 +1,7 @@
 with (import ./../lib.nix);
 
-{ config, pkgs, lib, ... }:
+params:
+{ pkgs, config, resources, options, ...}:
 
 let
   iohkpkgs = import ../. {};
