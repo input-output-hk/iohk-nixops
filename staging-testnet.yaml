@@ -10,18 +10,18 @@ args:
     contents: iohk
   systemStart:
     tag: NixInt
-    contents: 1527696582
+    contents: 1527869763
   CFaccessKeyId:
     tag: NixStr
     contents: iohk
   IOHKaccessKeyId:
     tag: NixStr
     contents: iohk
-gen-cmdline: new ben-test-faucet -e staging Nodes Faucet
+gen-cmdline: new ben-staging-faucet -e staging Nodes Faucet
 environment: Staging
 installer-bucket: default-bucket
 topology: topology-staging.yaml
-name: ben-test-faucet
+name: ben-staging-faucet
 files:
 - deployments/security-groups.nix
 - deployments/cardano-nodes-env-staging.nix
