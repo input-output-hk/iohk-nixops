@@ -82,6 +82,7 @@ envSettings env =
   let deplAgnosticFiles      = [ (Every,          All, "deployments/keypairs.nix")
                                , (Explorer,       All, "deployments/cardano-explorer.nix")
                                , (ReportServer,   All, "deployments/report-server.nix")
+                               , (Faucet,         All, "deployments/cardano-faucet.nix")
                                , (Nodes,          All, "deployments/cardano-nodes.nix")
                                , (Infra,          All, "deployments/infrastructure.nix")
                                , (Infra,          AWS, "deployments/infrastructure-target-aws.nix") ]

@@ -34,6 +34,13 @@ let
   };
 in
 {
+    imports = [
+      ./common.nix
+      ./amazon-base.nix
+      ./network-wide.nix
+      ./datadog.nix
+    ];
+
   options.services.faucet = with types; {
     enable = mkOption { type = bool; default = true; };
     home = mkOption { type = string; default = "/var/lib/faucet"; };
@@ -79,6 +86,8 @@ in
   };
 
   config = {
+
+    global.dnsHostname = "faucet";
 
     users = {
       users.faucet = {
