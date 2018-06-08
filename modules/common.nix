@@ -5,6 +5,7 @@ with (import ./../lib.nix);
 let
   iohk-pkgs = import ../default.nix {};
 in {
+  imports = [ ./ntp_fix.nix ];
   boot.kernel.sysctl = {
     ## DEVOPS-592
     "kernel.unprivileged_bpf_disabled" = 1;

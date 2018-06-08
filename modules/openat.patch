@@ -1,0 +1,11 @@
+diff -ur ntp-4.2.8p10-orig/ntpd/ntpd.c ntp-4.2.8p10/ntpd/ntpd.c
+--- ntp-4.2.8p10-orig/ntpd/ntpd.c	2018-06-07 08:55:59.677037920 -0300
++++ ntp-4.2.8p10/ntpd/ntpd.c	2018-06-07 08:56:15.588286903 -0300
+@@ -1182,6 +1182,7 @@
+ 	SCMP_SYS(setitimer),
+ 	SCMP_SYS(setsid),
+         SCMP_SYS(setsockopt),
++        SCMP_SYS(openat),
+ 	SCMP_SYS(socket),
+ 	SCMP_SYS(stat),
+ 	SCMP_SYS(time),
