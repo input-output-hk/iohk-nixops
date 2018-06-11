@@ -73,6 +73,7 @@ in lib // (rec {
     anatoliKey
     andreasKey
     benKey
+    doob
     dshevchenkoKey
     ksaric
     larsKey
