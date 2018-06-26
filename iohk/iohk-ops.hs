@@ -334,10 +334,10 @@ runNew _ _ _ = error "impossible"
 -- | Use 'cardano-keygen' to create keys for a develoment cluster.
 generateStakeKeys :: Options -> ConfigurationKey -> Turtle.FilePath -> IO ()
 generateStakeKeys o configurationKey outdir = do
-  cardanoSrc <- getCardanoSLSource o
+  cardanoConfig <- getCardanoSLConfig o
   cmd o "cardano-keygen"
     [ "--system-start", "0"
-    , "--configuration-file", format (fp%"/lib/configuration.yaml") cardanoSrc
+    , "--configuration-file", format (fp%"/lib/configuration.yaml") cardanoConfig
     , "--configuration-key", fromConfigurationKey configurationKey
     , "generate-keys-by-spec"
     , "--genesis-out-dir", T.pack $ Path.encodeString outdir

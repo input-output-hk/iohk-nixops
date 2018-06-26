@@ -27,7 +27,7 @@ import Data.List (find)
 
 import NixOps ( Options, NixopsConfig(..)
               , nixopsConfigurationKey, configurationKeys
-              , getCardanoSLSource )
+              , getCardanoSLConfig )
 import Types ( NixopsDepl(..), Environment(..), Arch(..) )
 import UpdateLogic ( InstallersResults(..), CIResult(..)
                    , realFindInstallers, githubWikiRecord
@@ -126,7 +126,7 @@ updateProposal o cfg UpdateProposalCommand{..} = do
   configKey <- maybe (fail "configurationKey not found") pure (nixopsConfigurationKey cfg)
   top <- pwd
   uid <- makeUpdateId (cName cfg) updateProposalDate
-  cslPath <- getCardanoSLSource o
+  cslPath <- getCardanoSLConfig o
   let opts = commandOptions (workPath top uid) cslPath configKey (cUpdateBucket cfg)
   sh $ case updateProposalStep of
     UpdateProposalInit initial -> updateProposalInit top uid (first (UpdateID (cName cfg)) initial)

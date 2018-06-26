@@ -50,7 +50,7 @@ module NixOps (
   , parallelIO
   , nixopsConfigurationKey
   , configurationKeys
-  , getCardanoSLSource
+  , getCardanoSLConfig
 
   -- * Types
   , Arg(..)
@@ -799,9 +799,9 @@ build o _c depl = do
 
 
 -- | Use nix to grab the sources of cardano-sl.
-getCardanoSLSource :: Options -> IO Path.FilePath
-getCardanoSLSource o = parent . fromText <$> incmdStrip o "nix-instantiate" args
-  where args = [ "--read-write-mode", "--eval", "-A", "cardano-sl.src", "default.nix" ]
+getCardanoSLConfig :: Options -> IO Path.FilePath
+getCardanoSLConfig o = parent . fromText <$> incmdStrip o "nix-instantiate" args
+  where args = [ "--read-write-mode", "--eval", "-A", "cardano-sl-config", "default.nix" ]
 
 
 -- * State management

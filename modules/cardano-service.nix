@@ -6,7 +6,9 @@ let
   cfg = config.services.cardano-node;
   name = "cardano-node";
   stateDir = "/var/lib/cardano-node";
-  cardano = (import ./../default.nix { enableProfiling = cfg.enableProfiling; }).cardano-sl-node-static;
+  iohkPkgs = import ./../default.nix { enableProfiling = cfg.enableProfiling; };
+  cardano = iohkPkgs.cardano-sl-node-static;
+  cardano-config = iohkPkgs.cardano-sl-config;
   distributionParam = "(${toString cfg.genesisN},${toString cfg.totalMoneyAmount})";
   rnpDistributionParam = "(${toString cfg.genesisN},50000,${toString cfg.totalMoneyAmount},0.99)";
   smartGenIP = builtins.getEnv "SMART_GEN_IP";
@@ -40,11 +42,11 @@ let
       "--keyfile ${stateDir}/key${toString cfg.nodeIndex}.sk")
     (optionalString (cfg.productionMode && globals.systemStart != 0) "--system-start ${toString globals.systemStart}")
     (optionalString cfg.supporter "--supporter")
-    "--log-config ${cardano.src + "/../log-configs/cluster.yaml"}"
+    "--log-config ${cardano-config}/log-configs/cluster.yaml"
     "--logs-prefix /var/lib/cardano-node"
     "--db-path ${stateDir}/node-db"
     (optionalString (!cfg.enableP2P) "--kademlia-explicit-initial --disable-propagation ${smartGenPeer}")
-    "--configuration-file ${cardano.src + "/../lib/"}/configuration.yaml"
+    "--configuration-file ${cardano-config}/lib/configuration.yaml"
     "--configuration-key ${config.deployment.arguments.configurationKey}"
     "--topology ${cfg.topologyYaml}"
     "--node-id ${params.name}"
