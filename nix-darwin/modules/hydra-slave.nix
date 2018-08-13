@@ -6,8 +6,7 @@ let
   opsLib = import ../../lib.nix;
 
   environment = concatStringsSep " "
-    [ "NIX_REMOTE=daemon"
-      "NIX_SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt"
+    [ "NIX_SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt"
     ];
 in
 

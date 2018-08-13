@@ -5,9 +5,6 @@ set -xeu
 # https://github.com/NixOS/nixops/issues/693
 export BOTO_CONFIG=/dev/null
 
-# shellcheck disable=SC1091
-source ./scripts/set_nixpath.sh
-
 IOHK_OPS=${1:-$(nix-build -A iohk-ops)/bin/iohk-ops}
 CLEANUP_CONFIGS=${3:-true}
 WITH_STAGING=${4:-true}

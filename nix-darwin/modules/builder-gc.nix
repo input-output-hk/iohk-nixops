@@ -51,7 +51,6 @@ in
           ${config.nix.package}/bin/nix-collect-garbage --max-freed ${toString (cfg.maxFreedMB * 1024 * 1024)}
         fi
       '';
-      environment.NIX_REMOTE = lib.optionalString config.services.nix-daemon.enable "daemon";
       serviceConfig.RunAtLoad = false;
       serviceConfig.StartCalendarInterval = cfg.interval;
     };

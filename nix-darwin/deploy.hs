@@ -33,7 +33,7 @@ deployHost Force{..} drv outPath host = do
   printf ("Copying derivation to "%s%"\n") host
   procs "nix-copy-closure" ["--to", host, tt drv] empty
   printf ("Building derivation on "%s%"\n") host
-  procs "ssh" [ host, "NIX_REMOTE=daemon", "nix-store", "-j", "1"
+  procs "ssh" [ host, "nix-store", "-j", "1"
               , "-r", tt drv
               , "--add-root", "/nix/var/nix/gcroots/per-user/$USER/current-system" ] empty
   currentSystem <- T.stripEnd . snd <$> procStrict "ssh" [host, "readlink", "/run/current-system"] empty
@@ -43,7 +43,7 @@ deployHost Force{..} drv outPath host = do
       printf ("Activating on "%s%"\n") host
       -- using system instead of procs so that ssh can pass tty to sudo
       let
-        args = ["-t", host, "sudo", "NIX_REMOTE=daemon", tt (outPath </> "activate")]
+        args = ["-t", host, "sudo", tt (outPath </> "activate")]
         activate = P.proc "ssh" (map T.unpack args)
       system activate empty
     else do
