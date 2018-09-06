@@ -19,7 +19,7 @@ WITH_INFRA_PRODUCTION=${9:-true}
 shift || true
 WITH_INFRA_STAGING=${9:-true}
 shift || true
-WITH_BENCHMARK=${9:-true}
+WITH_BENCHMARK=${9:-}
 
 homestate="$(mktemp -d -t iohk-ops.XXXXXXXXXXXX)"
 export HOME="${homestate}"
