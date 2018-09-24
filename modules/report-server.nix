@@ -24,7 +24,7 @@ in {
       };
       executable = mkOption {
         type = types.package;
-        default = (import ./../default.nix {}).cardano-report-server-static;
+        default = (import ../default.nix {}).cardano-report-server-static;
       };
       zendesk = {
         email = mkOption {
@@ -124,6 +124,45 @@ in {
             --logsdir ${cfg.logsdir}
       '';
     };
+    systemd.services.zendeskTicketTest = let  # DEVOPS-977
+      payload = pkgs.writeText "payload.txt" (builtins.toJSON {
+        application = "cardano-node";
+        version = "0.0.1";
+        build = "1";
+        os = "Linux 4.9.2 NixOS";
+        logs = [ "" ];
+        date = "2018-05-03T00:00:00";
+        magic = 2000000000;
+        type = {
+          type = "customreport";
+          email = "iohk.zendesk.test@gmail.com";
+          subject = "Mainnet Cardano Reporting Server Diagnostic Test";
+          problem = "Right is right even if no-one is doing it; wrong is wrong even if everyone is doing it.";
+        };
+      });
+    in {
+      startAt = [ "hourly" ];
+      path = with pkgs; [ curl jq ];
+      script = ''
+        fail() {
+          echo FAILURE sending dummy report to report server
+        }
+        curl -v -F payload="<${payload}" http://${config.deployment.route53.hostName}:8080/report > /tmp/last-test-reply.json || fail
+        jq . < /tmp/last-test-reply.json
+      '';
+    };
+
+    # TODO, merge with the monitor in modules/cardano.nix
+    services.dd-agent.processConfig = ''
+    init_config:
+
+    instances:
+    - name:            cardano-report-server
+      search_string: ['cardano-report-server']
+      exact_match: True
+      thresholds:
+        critical: [1, 1]
+    '';
 
     assertions = [
       { assertion =

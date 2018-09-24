@@ -8,6 +8,7 @@ config.yaml
 
 .stack-work
 /cardano-sl/
+/cardano-sl-tools/
 ec2-image/
 experiments/
 image/
@@ -16,10 +17,11 @@ image/
 logs/
 logs-analyze/
 /nixops
+/update-proposals/
 
 static/*.secret
 static/github_token
-static/buildkite_token
+static/buildkite-token
 static/id_buildfarm
 static/recaptcha_secret_key
 static/recaptcha_site_key

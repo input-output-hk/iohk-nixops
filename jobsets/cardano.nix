@@ -11,6 +11,7 @@ let
   iohkpkgs = import ./../default.nix { inherit pkgs; };
   jobs = mapTestOn ((packagePlatforms iohkpkgs) // {
     iohk-ops = [ "x86_64-linux" ];
+    github-webhook-util = [ "x86_64-linux" ];
     iohk-ops-integration-test = [ "x86_64-linux" ];
     nixops = [ "x86_64-linux" ];
   });

@@ -1,7 +1,9 @@
-{ globals, ... }: with (import ./../lib.nix);
+{ globals, ... }: with (import ../lib.nix);
 let nodeMap = { inherit (globals.fullMap) faucet; }; in
 
-flip mapAttrs nodeMap
-(name: import ./../modules/cardano-base.nix
-       globals
-       [./../modules/cardano-faucet.nix])
+{
+  faucet = {
+    imports = [ ../modules/cardano-base.nix ../modules/cardano-faucet.nix ];
+    params = nodeMap.faucet;
+  };
+}

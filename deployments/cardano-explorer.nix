@@ -1,7 +1,9 @@
-{ globals, ... }: with (import ./../lib.nix);
+{ globals, ... }: with import ../lib.nix;
 let nodeMap = { inherit (globals.fullMap) explorer; }; in
 
-flip mapAttrs nodeMap
-(name: import ./../modules/cardano.nix
-       globals
-       [./../modules/cardano-explorer.nix])
+{
+  explorer = {
+    imports = [ ../modules/cardano-explorer.nix ];
+    params = nodeMap.explorer;
+  };
+}

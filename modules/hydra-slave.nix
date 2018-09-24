@@ -1,9 +1,8 @@
-{ config, pkgs, lib, ... }:
+{ lib, ... }:
 
 with lib;
 
 let
-  iohk-pkgs = import ../default.nix {};
   localLib = import ../lib.nix;
 in
 {
@@ -14,9 +13,12 @@ in
 
   nix = {
     binaryCaches = mkForce [ "https://cache.nixos.org" ];
+    extraOptions = ''
+      # max of 2 hours for any given derivation on linux
+      # note darwin is slower, and should have a higher timeout, maybe 4h?
+      timeout = ${toString (3600 * 2)}
+    '';
   };
-
-  environment.systemPackages = [ iohk-pkgs.iohk-ops ];
 
   users.extraUsers.root.openssh.authorizedKeys.keys = map (key: ''
     command="nice -n20 nix-store --serve --write" ${key}

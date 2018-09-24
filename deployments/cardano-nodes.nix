@@ -1,9 +1,12 @@
-{ globals, ... }: with (import ./../lib.nix);
-let nodeMap = globals.nodeMap; in
+{ globals, ... }: with import ../lib.nix;
+let
+  nodeMap = globals.nodeMap;
+  mkNode = name: value: {
+    imports = [ ../modules/cardano.nix ];
+    params = value;
+  };
+in
 
-(flip mapAttrs nodeMap
-(name: import ./../modules/cardano.nix
-       globals
-       [])) // {
-  require = [ ./mainnet-noauto-restart.nix ];
+(mapAttrs mkNode nodeMap) // {
+  require = [ ./mainnet-noauto-restart.nix ./global.nix ];
 }

@@ -6,7 +6,7 @@ let
   iohkpkgs = import ./default.nix {};
   iohk-ops = iohkpkgs.iohk-ops;
   justIo = pkgs.runCommand "shell" {
-    buildInputs = with pkgs; [ iohk-ops terraform_0_11 nixops ];
+    buildInputs = with pkgs; [ iohk-ops terraform_0_11 iohkpkgs.nixops cabal-install ];
     passthru = {
       inherit ioSelfBuild withAuxx;
     };

@@ -1,51 +1,42 @@
-with (import ./../lib.nix);
+with import ../lib.nix;
 
-globals: imports: params:
-  { pkgs, nodes, config, resources, options, ...}:
-  {
+{ pkgs, nodes, config, resources, options, ...}:
+
+{
     imports = [
       ./common.nix
       ./amazon-base.nix
       ./network-wide.nix
-    ] ++ map (path: import path globals params) imports;
+      ./dd-process-monitor.nix
+    ];
 
-    global.organisation = params.org;
+    global.organisation = config.params.org;
 
     services.dnsmasq.enable = true;
     services.dnsmasq.servers = [ "127.0.0.1" ];
 
     # TODO: DEVOPS-8
     #deployment.ec2.ami = (import ./amis.nix).${config.deployment.ec2.region};
-    deployment.ec2.region         = mkForce params.region;
-    deployment.ec2.zone           = mkForce params.zone;
-    deployment.ec2.accessKeyId    = params.accessKeyId;
-    deployment.ec2.keyPair        = resources.ec2KeyPairs.${params.keyPairName};
+    deployment.ec2.region         = mkForce config.params.region;
+    deployment.ec2.zone           = mkForce config.params.zone;
+    deployment.ec2.accessKeyId    = config.params.accessKeyId;
+    deployment.ec2.keyPair        = resources.ec2KeyPairs.${config.params.keyPairName};
     deployment.ec2.securityGroups =
-      with params;
+      with config.params;
       let sgNames =
-           optionals typeIsExplorer              [ "allow-to-explorer-${params.region}" ]
-        ++ optionals typeIsFaucet                [ "allow-to-faucet-${params.region}" ]
-        ++ optionals typeIsCore                  [ "allow-cardano-static-peers-${params.name}-${params.region}-${params.org}" ]
-        ++ optionals typeIsRelay                 [ "allow-kademlia-public-udp-${params.region}"
-                                                   "allow-cardano-public-tcp-${params.region}" ]
-        ++ optionals config.global.enableEkgWeb  [ "allow-ekg-public-tcp-${params.region}-${params.org}" ];
+           optionals typeIsExplorer              [ "allow-to-explorer-${config.params.region}" ]
+        ++ optionals typeIsFaucet                [ "allow-to-faucet-${config.params.region}" ]
+        ++ optionals typeIsCore                  [ "allow-cardano-static-peers-${config.params.name}-${config.params.region}-${config.params.org}" ]
+        ++ optionals typeIsRelay                 [ "allow-kademlia-public-udp-${config.params.region}"
+                                                   "allow-cardano-public-tcp-${config.params.region}" ]
+        ++ optionals config.global.enableEkgWeb  [ "allow-ekg-public-tcp-${config.params.region}-${config.params.org}" ];
       in map (resolveSGName resources)
              (if config.global.omitDetailedSecurityGroups
-              then [ "allow-all-${params.region}-${params.org}" ]
+              then [ "allow-all-${config.params.region}-${config.params.org}" ]
               else sgNames);
 
-    services.dd-agent.processConfig = let
-      processName = if params.typeIsExplorer then "cardano-explorer"
-                    else if params.typeIsFaucet then "cardano-faucet"
-                    else "cardano-node-simple";
-    in ''
-      init_config:
-
-      instances:
-      - name:            ${processName}
-        search_string: ['${processName}']
-        exact_match: True
-        thresholds:
-          critical: [1, 1]
-    '';
+    services.dd-agent.processMonitor =
+      if config.params.typeIsExplorer then "cardano-explorer"
+      else if config.params.typeIsFaucet then "cardano-faucet"
+      else "cardano-node-simple";
   }

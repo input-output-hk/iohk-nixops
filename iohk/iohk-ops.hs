@@ -1,33 +1,41 @@
 #!/usr/bin/env runhaskell
-{-# LANGUAGE DeriveGeneric, GADTs, LambdaCase, OverloadedStrings, RecordWildCards, StandaloneDeriving, TupleSections, ViewPatterns #-}
+{-# LANGUAGE DeriveGeneric      #-}
+{-# LANGUAGE GADTs              #-}
+{-# LANGUAGE LambdaCase         #-}
+{-# LANGUAGE OverloadedStrings  #-}
+{-# LANGUAGE RecordWildCards    #-}
+{-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE TupleSections      #-}
 {-# OPTIONS_GHC -Wall -Wno-name-shadowing -Wno-missing-signatures -Wno-type-defaults #-}
 
 module Main where
 
-import           Prelude                   hiding (FilePath)
-import           Control.Monad                    (forM_)
-import           Data.Char                        (toLower)
+import           Control.Monad             (forM_)
+import           Data.Char                 (toLower)
 import           Data.List
-import qualified Data.Map                      as Map
+import qualified Data.Map                  as Map
 import           Data.Maybe
-import           Data.Monoid                      ((<>))
-import           Data.Optional                    (Optional)
-import qualified Data.Text                     as T
-import qualified Filesystem.Path.CurrentOS     as Path
-import qualified System.Environment            as Sys
-import           Turtle                    hiding (env, err, fold, inproc, procs, shells, e, f, o, x)
-import           Time.Types
+import           Data.Monoid               ((<>))
+import           Data.Optional             (Optional)
+import qualified Data.Text                 as T
+import qualified Filesystem.Path.CurrentOS as Path
+import           Options.Applicative       (auto, long, metavar, option, short,
+                                            str)
+import           Prelude                   hiding (FilePath)
+import qualified System.Environment        as Sys
 import           Time.System
-import           Options.Applicative.Builder (strOption, long, short, metavar)
+import           Time.Types
+import           Turtle                    hiding (e, env, err, f, fold, inproc,
+                                            o, option, procs, shells, x)
 
 import           Constants
 import           NixOps
-import qualified NixOps                        as Ops
+import qualified NixOps                    as Ops
 import           Types
-import           Utils
 import           UpdateProposal
+import           Utils
 
-
+
 -- * Elementary parsers
 --
 -- | Given a string, either return a constructor that being 'show'n case-insensitively matches the string,
@@ -77,7 +85,7 @@ parserConfirmation question =
          True  -> Confirm)
   <$> switch "confirm" 'y' "Confirm this particular action, don't ask questions."
 
-
+
 -- * Central command
 --
 data Command where
@@ -124,7 +132,7 @@ data Command where
   GetJournals           :: JournaldTimeSpec -> Maybe JournaldTimeSpec -> Command
   CWipeNodeDBs          :: Confirmation -> Command
   PrintDate             :: Command
-  FindInstallers        :: Text -> Maybe FilePath -> Command
+  FindInstallers        :: Text -> Maybe FilePath -> Maybe Int -> Maybe Int -> Command
   UpdateProposal        :: UpdateProposalCommand -> Command
 deriving instance Show Command
 
@@ -207,13 +215,13 @@ centralCommandParser =
                                 <$> parserConfirmation "Wipe node DBs on the entire cluster?")
    , ("date",                   "Print date/time",                                                  pure PrintDate)
    , ("update-proposal",        "Subcommands for updating wallet installers. Apply commands in the order listed.", UpdateProposal <$> parseUpdateProposalCommand)
-   , ("find-installers",        "find installers from CI",                                          FindInstallers <$> (T.pack <$> strOption (long "daedalus-rev" <> short 'r' <> metavar "SHA1")) <*> optional (optPath "download" 'd' "Download the found installers to the given directory."))
+   , ("find-installers",        "find installers from CI",                                          FindInstallers <$> (option str (long "daedalus-rev" <> short 'r' <> metavar "SHA1")) <*> optional (optPath "download" 'd' "Download the found installers to the given directory.") <*> optional (option auto (long "buildkite-build-num"  <> metavar "NUMBER")) <*> optional (option auto (long "appveyor-build-num" <> metavar "NUMBER")))
    ]
 
    <|> subcommandGroup "Other:"
     [ ])
 
-
+
 main :: IO ()
 main = do
   args <- (Arg . T.pack <$>) <$> Sys.getArgs
@@ -274,13 +282,13 @@ runTop o@Options{..} args topcmd = do
             GetJournals since until  -> Ops.getJournals               o c since until
             CWipeNodeDBs confirm     -> Ops.wipeNodeDBs               o c confirm
             PrintDate                -> Ops.date                      o c
-            FindInstallers rev dl    -> Ops.findInstallers            c rev dl
+            FindInstallers rev dl bk av -> Ops.findInstallers         c rev dl bk av
             UpdateProposal up        -> updateProposal                o c up
             Clone{..}                -> error "impossible"
             New{..}                  -> error "impossible"
             SetRev   _ _ _           -> error "impossible"
 
-
+
 runClone :: Options -> NixopsDepl -> Branch -> IO ()
 runClone o@Options{..} depl branch = do
   let bname     = fromBranch branch
@@ -314,6 +322,8 @@ runNew o@Options{..} New{..} args = do
     let secrets = [ "static/github_token"
                   , "static/id_buildfarm"
                   , "static/datadog-api.secret"
+                  , "static/google_oauth_hydra_grafana.secret"
+                  , "static/github-webhook-util.secret"
                   , "static/datadog-application.secret"
                   , "static/zendesk-token.secret" ]
     forM_ secrets touch

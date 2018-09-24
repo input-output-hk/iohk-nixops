@@ -1,4 +1,5 @@
-#!/usr/bin/env bash
+#!/usr/bin/env nix-shell
+#!nix-shell -i bash -p shellcheck
 EXIT_STATUS=0
 
 while IFS= read -r -d '' i

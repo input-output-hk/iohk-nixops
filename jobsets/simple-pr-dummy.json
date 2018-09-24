@@ -15,5 +15,31 @@
       }
     },
     "title": "Pull request title"
+  },
+  "30031": {
+    "base": {
+      "repo": {
+        "clone_url": "https://github.com/user/project.git"
+      }
+    },
+    "head": {
+      "ref": "pr-branch",
+      "repo": {
+        "name": "reponame",
+        "owner": {
+          "login": "githubuser"
+        }
+      }
+    },
+    "labels": [
+      {
+        "color": "006b75",
+        "default": false,
+        "id": 692360873,
+        "name": "hydra-dont-build",
+        "url": "https://api.github.com/repos/input-output-hk/cardano-sl/labels/hydra-dont-build"
+      }
+    ],
+    "title": "Pull request title"
   }
 }

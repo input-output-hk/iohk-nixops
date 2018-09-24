@@ -17,7 +17,9 @@ cabal-version:       >=1.10
 library
   hs-source-dirs:      common
   default-language:    Haskell2010
+  default-extensions:  OverloadedStrings
   exposed-modules:     Appveyor
+                     , Arch
                      , Buildkite.API
                      , Constants
                      , Github
@@ -68,7 +70,7 @@ library
 executable iohk-ops
   main-is:             iohk-ops.hs
   default-language:    Haskell2010
-  other-extensions:    DeriveGeneric, GeneralizedNewtypeDeriving, OverloadedStrings, RecordWildCards, TupleSections, ViewPatterns
+  default-extensions:  OverloadedStrings
   other-modules:       UpdateProposal
 
   build-depends:       aeson
@@ -80,29 +82,43 @@ executable iohk-ops
                      , iohk-ops
                      , optional-args
                      , optparse-applicative
+                     , process
                      , system-filepath
                      , text
                      , time
                      , turtle
                      , unordered-containers
                      , yaml
+
 test-suite iohk-ops-test
   main-is:          Spec.hs
   default-language: Haskell2010
+  default-extensions: OverloadedStrings, RecordWildCards
+
   type:             exitcode-stdio-1.0
   other-modules:    AppveyorSpec
                   , Buildkite.Pipeline
                   , BuildkiteSpec
                   , UpdateLogicSpec
+                  , UpdateProposal
+                  , UpdateProposalSpec
   build-depends:    base
+                  , iohk-ops
                   , aeson
                   , bytestring
+                  , foldl
                   , hspec
-                  , iohk-ops
+                  , optparse-applicative
+                  , process
+                  , system-filepath
                   , text
+                  , time
+                  , mtl
+                  , turtle
                   , unordered-containers
                   , yaml
   hs-source-dirs:   test .
+
 executable iohk-ops-integration-test
   main-is:          IntegrationTest.hs
   default-language: Haskell2010

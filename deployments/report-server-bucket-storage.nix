@@ -25,6 +25,7 @@
         compress
         dateext
         rotate 10000
+        su report-server report-server
       }
     '';
   };

@@ -7,19 +7,41 @@ export BOTO_CONFIG=/dev/null
 
 # shellcheck disable=SC1091
 source ./scripts/set_nixpath.sh
+CLEANUP_CONFIGS=true
+WITH_STAGING=true
+WITH_PRODUCTION=true
+WITH_TESTNET=true
+WITH_DEVELOPMENT=true
+WITH_EXPLORER=true
+WITH_REPORT_SERVER=true
+WITH_INFRA_PRODUCTION=true
+WITH_INFRA_STAGING=true
+WITH_BENCHMARK=true
 
-IOHK_OPS=${1:-$(nix-build -A iohk-ops)/bin/iohk-ops}
-CLEANUP_CONFIGS=${3:-true}
-WITH_STAGING=${4:-true}
-WITH_PRODUCTION=${5:-true}
-WITH_DEVELOPMENT=${6:-true}
-WITH_EXPLORER=${7:-true}
-WITH_REPORT_SERVER=${8:-true}
-WITH_INFRA_PRODUCTION=${9:-true}
-shift || true
-WITH_INFRA_STAGING=${9:-true}
-shift || true
-WITH_BENCHMARK=${9:-true}
+while getopts o:c:s:p:t:d:e:r:i:j:b: option
+do
+  case "${option}" in
+    o) IOHK_OPS=${OPTARG};;
+    c) CLEANUP_CONFIGS=${OPTARG};;
+    s) WITH_STAGING=${OPTARG};;
+    p) WITH_PRODUCTION=${OPTARG};;
+    t) WITH_TESTNET=${OPTARG};;
+    d) WITH_DEVELOPMENT=${OPTARG};;
+    e) WITH_EXPLORER=${OPTARG};;
+    r) WITH_REPORT_SERVER=${OPTARG};;
+    i) WITH_INFRA_PRODUCTION=${OPTARG};;
+    j) WITH_INFRA_STAGING=${OPTARG};;
+    b) WITH_BENCHMARK=${OPTARG};;
+    *) echo "Invalid flag passed, exiting" || exit 1
+  esac
+done
+
+if [[ ! -v IOHK_OPS ]]
+then
+  IOHK_OPS=$(nix-build -A iohk-ops)/bin/iohk-ops
+fi
+
+
 
 homestate="$(mktemp -d -t iohk-ops.XXXXXXXXXXXX)"
 export HOME="${homestate}"
@@ -78,42 +100,50 @@ nix-build default.nix -A cardano-sl-tools -o cardano-sl-tools
 PATH=$PATH:./cardano-sl-tools/bin/
 export PATH
 
-if test -n "${WITH_STAGING}"; then
+if [[ ${WITH_STAGING} == true ]]; then
 CLEANUP_DEPLS="${CLEANUP_DEPLS} test-stag"
 ${IOHK_OPS}               new  --config 'test-stag.yaml'   --environment staging    "${COMMON_OPTIONS[@]}" 'test-stag'    "${CARDANO_COMPONENTS[@]}"
 ${IOHK_OPS} "${GENERAL_OPTIONS[@]}" --config 'test-stag.yaml'   create deploy --dry-run --initial-heap-size 4
 banner 'Staging env evaluated'
 fi
 
-if test -n "${WITH_PRODUCTION}"; then
+if [[ ${WITH_PRODUCTION} == true ]]; then
 CLEANUP_DEPLS="${CLEANUP_DEPLS} test-prod"
 ${IOHK_OPS}               new  --config 'test-prod.yaml'   --environment production "${COMMON_OPTIONS[@]}" 'test-prod'    "${CARDANO_COMPONENTS[@]}"
 ${IOHK_OPS} "${GENERAL_OPTIONS[@]}" --config 'test-prod.yaml'   create deploy --dry-run --initial-heap-size 4
 banner 'Production env evaluated'
 fi
 
-if test -n "${WITH_DEVELOPMENT}"; then
+if [[ ${WITH_TESTNET} == true ]]; then
+CLEANUP_DEPLS="${CLEANUP_DEPLS} test-stag"
+${IOHK_OPS}               new  --config 'test-stag.yaml'   --environment testnet    "${COMMON_OPTIONS[@]}" 'test-stag'    "${CARDANO_COMPONENTS[@]}"
+${IOHK_OPS} "${GENERAL_OPTIONS[@]}" --config 'test-stag.yaml'   create deploy --dry-run --initial-heap-size 4
+banner 'Testnet env evaluated'
+fi
+
+if [[ ${WITH_DEVELOPMENT} == true ]]; then
 CLEANUP_DEPLS="${CLEANUP_DEPLS} test-devo"
 ${IOHK_OPS}               new  --config 'test-devo.yaml'                            "${COMMON_OPTIONS[@]}" 'test-devo'    "${CARDANO_COMPONENTS[@]}"
 ${IOHK_OPS} "${GENERAL_OPTIONS[@]}" --config 'test-devo.yaml'   create deploy --dry-run --initial-heap-size 4
 banner 'Development env evaluated'
 fi
 
-if test -n "${WITH_INFRA_PRODUCTION}"; then
+if [[ ${WITH_INFRA_PRODUCTION} == true ]]; then
 CLEANUP_DEPLS="${CLEANUP_DEPLS} test-infra"
 ${IOHK_OPS}               new  --config 'test-infra.yaml'  --environment production "${COMMON_OPTIONS[@]}" 'test-infra'   Infra
 ${IOHK_OPS} "${GENERAL_OPTIONS[@]}" --config 'test-infra.yaml'  create deploy --dry-run --initial-heap-size 4
 banner 'Production infra evaluated'
 fi
 
-if test -n "${WITH_INFRA_STAGING}"; then
+if [[ ${WITH_INFRA_STAGING} == true ]]; then
 CLEANUP_DEPLS="${CLEANUP_DEPLS} test-infra"
 ${IOHK_OPS}               new  --config 'test-infra.yaml'  --environment staging   "${COMMON_OPTIONS[@]}" 'test-infra'   Infra
 ${IOHK_OPS} "${GENERAL_OPTIONS[@]}" --config 'test-infra.yaml'  create deploy --dry-run --initial-heap-size 4
 banner 'Staging infra evaluated'
 fi
 
-if test -n "${WITH_BENCHMARK}"; then
+echo "BENCHMARK ENABLED: ${WITH_BENCHMARK}"
+if [[ ${WITH_BENCHMARK} == true ]]; then
 CLEANUP_DEPLS="${CLEANUP_DEPLS} test-bench"
 ${IOHK_OPS}               new  --config 'test-bench.yaml'   --environment benchmark    "${COMMON_OPTIONS[@]}" 'test-bench'    "${CARDANO_COMPONENTS[@]}"
 ${IOHK_OPS} "${GENERAL_OPTIONS[@]}" --config 'test-bench.yaml'   create deploy --dry-run

@@ -118,6 +118,10 @@ with import ../lib.nix;
                 protocol = "tcp";
                 fromPort = 80; toPort = 80;
                 sourceIp = "0.0.0.0/0";
+              } {
+                protocol = "tcp";
+                fromPort = 443; toPort = 443;
+                sourceIp = "0.0.0.0/0";
               }];
             };
             "allow-to-faucet-${region}" = {

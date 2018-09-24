@@ -377,7 +377,7 @@ instance FromJSON NixopsConfig where
         <*> v .: "environment"
         <*> v .: "target"
         <*> v .: "installer-bucket"
-        <*> v .: "installer-url-base" .!= "--unspecified--"
+        <*> v .: "installer-url-base"
         <*> v .: "elements"
         <*> v .: "files"
         <*> v .: "args"
@@ -442,7 +442,7 @@ mkNewConfig o cGenCmdline cName                       mTopology cEnvironment cTa
       cFiles          = deploymentFiles                         cEnvironment cTarget cElements
       cTopology       = flip fromMaybe                mTopology envDefaultTopology
       cUpdateBucket   = "default-bucket"
-      cInstallerURLBase = "--undefined--"
+      cInstallerURLBase = Nothing
   cDeplArgs <- selectInitialConfigDeploymentArgs o cTopology cEnvironment         cElements systemStart mConfigurationKey
   topology  <- getSimpleTopo cElements cTopology
   nixpkgs   <- Path.fromText <$> incmdStrip o "nix-build" ["--no-out-link", "fetch-nixpkgs.nix"]
@@ -897,9 +897,11 @@ configurationKeys Testnet    Mac64   = "testnet_wallet_macos64"
 configurationKeys Testnet    Linux64 = "testnet_wallet_linux64"
 configurationKeys env _ = error $ "Application versions not used in '" <> show env <> "' environment"
 
-findInstallers :: NixopsConfig -> T.Text -> Maybe FilePath -> IO ()
-findInstallers c daedalusRev destDir = do
-  installers <- realFindInstallers (configurationKeys $ cEnvironment c) (const True) daedalusRev destDir
+findInstallers :: NixopsConfig -> T.Text -> Maybe FilePath
+               -> Maybe Int -> Maybe Int -> IO ()
+findInstallers c daedalusRev destDir bkNum avNum = do
+  let instP = selectBuildNumberPredicate bkNum avNum
+  installers <- getInstallersResults (configurationKeys $ cEnvironment c) instP daedalusRev destDir
   printInstallersResults installers
   case destDir of
     Just dir -> void $ proc "ls" [ "-ltrha", tt dir ] mempty

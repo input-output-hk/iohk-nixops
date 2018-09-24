@@ -1,13 +1,11 @@
-{ globals, ... }: with (import ./../lib.nix);
+{ globals, ... }: with (import ../lib.nix);
 let nodeMap = { inherit (globals.fullMap) explorer; }; in
 
-
-(flip mapAttrs nodeMap (name: import ./../modules/cardano-testnet.nix))
-//
 {
+  explorer = (import ../modules/cardano-testnet.nix) nodeMap.explorer;
   resources = {
     elasticIPs = nodesElasticIPs nodeMap;
-    datadogMonitors = (with (import ./../modules/datadog-monitors.nix); {
+    datadogMonitors = with import ../modules/datadog-monitors.nix; {
       cardano_explorer_process = mkMonitor (cardano_explorer_process_monitor // {
         message = pagerDutyPolicy.nonCritical;
         monitorOptions.thresholds = {
@@ -16,6 +14,6 @@ let nodeMap = { inherit (globals.fullMap) explorer; }; in
           ok = 1;
         };
       });
-    });
+    };
   };
 }

@@ -3,14 +3,16 @@
     "hidden": false,
     "description": "Jobsets",
     "nixexprinput": "src",
-    "nixexprpath": "jobsets/default.nix",
-    "checkinterval": 60,
-    "schedulingshares": 420,
+    "nixexprpath": "jobsets/default-mantis.nix",
+    "checkinterval": 300,
+    "schedulingshares": 20,
     "enableemail": true,
     "emailoverride": "",
     "keepnr": 3,
     "inputs": {
-         "src": { "type": "git", "value": "https://github.com/input-output-hk/mantis.git hydra-config", "emailresponsible": false }
-        ,"nixpkgs": { "type": "git", "value": "https://github.com/NixOS/nixpkgs-channels.git nixos-18.03", "emailresponsible": false }
-     }
+        "src": { "type": "git", "value": "git@github.com:input-output-hk/mantis-iele-ops.git master", "emailresponsible": false },
+        "nixpkgs": { "type": "git", "value": "https://github.com/NixOS/nixpkgs-channels.git nixos-18.03", "emailresponsible": false },
+        "mantisPrsJSON": { "type": "githubpulls", "value": "input-output-hk mantis", "emailresponsible": false }
+
+    }
 }

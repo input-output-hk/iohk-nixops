@@ -6,7 +6,7 @@
 , environment
 , ... }:
 
-with (import ./lib.nix);
+with import ./lib.nix;
 
 let topologySpec     = builtins.fromJSON (builtins.readFile topologyFile);
     # WARNING: this sort order is key in a number of things:

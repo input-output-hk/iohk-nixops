@@ -1,0 +1,7 @@
+diff --git a/commit_hash.txt b/commit_hash.txt
+new file mode 100644
+index 00000000..ba139829
+--- /dev/null
++++ b/commit_hash.txt
+@@ -0,0 +1 @@
++124ca40dc525a987a88176c6e5170978e82fa290

@@ -9,13 +9,18 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module UpdateLogic
-  ( realFindInstallers
+  ( getInstallersResults
+  , realFindInstallers
+  , InstallerPredicate
+  , selectBuildNumberPredicate
+  , installerPredicates
   , CIResult(..)
   , uploadHashedInstaller
   , uploadSignature
   , updateVersionJson
   , githubWikiRecord
   , printInstallersResults
+  , CISystem(..)
   , InstallersResults(..)
   , GlobalResults(..)
   , parseStatusContext
@@ -41,7 +46,7 @@ import           Control.Applicative          ((<|>))
 import           Control.Exception            (try)
 import           Control.Lens                 (to, (^.))
 import qualified Control.Lens                 as Lens
-import           Control.Monad                (guard, when, (<=<))
+import           Control.Monad                (guard, when, (<=<), mapM_, forM_)
 import           Control.Monad.IO.Class       (liftIO)
 import           Control.Monad.Trans.Resource (runResourceT)
 import           Data.Aeson                   (ToJSON, FromJSON)
@@ -96,7 +101,7 @@ data CIResult = CIResult
   , ciResultSHA1Sum     :: Maybe Text
   } deriving (Show, Generic)
 
-data CISystem = Buildkite | AppVeyor deriving (Show, Generic)
+data CISystem = Buildkite | AppVeyor deriving (Show, Eq, Bounded, Enum, Generic)
 
 data InstallersResults = InstallersResults
   { ciResults    :: [CIResult]
@@ -112,6 +117,22 @@ instance ToJSON CISystem
 
 -- | Allow selection of which CI artifacts to download.
 type InstallerPredicate = CIResult -> Bool
+
+-- | An 'InstallerPredicate' which filters by build numbers from the
+-- CI system. Useful when the CI has multiple builds for a single git
+-- revision. 'Nothing' designates no filter.
+selectBuildNumberPredicate :: Maybe Int -- ^ Buildkite build number
+                           -> Maybe Int -- ^ AppVeyor build number
+                           -> InstallerPredicate
+selectBuildNumberPredicate bk av =
+  installerPredicates (buildNum Buildkite bk) (buildNum AppVeyor av)
+  where
+    buildNum ci Nothing    _ = True
+    buildNum ci (Just num) r = ciResultSystem r /= ci || ciResultBuildNumber r == num
+
+-- | Joins two installer predicates so that both must be satisfied.
+installerPredicates :: InstallerPredicate -> InstallerPredicate -> InstallerPredicate
+installerPredicates p q a = p a && q a
 
 -- | Read the Buildkite token from a config file. This file is not
 -- checked into git, so the user needs to create it themself.
@@ -131,17 +152,24 @@ loadBuildkiteToken = try (T.readFile buildkiteTokenFile) >>= \case
     st = makeFormat T.pack
 
 cdnLink :: HasCallStack => NixopsConfig -> ObjectKey -> Text
-cdnLink NixopsConfig{..} (ObjectKey key) = mconcat [ "https://", cInstallerURLBase, "/", key ]
+cdnLink NixopsConfig{cInstallerURLBase=Nothing, ..} _ = error "installer-url-base is required in the configuration YAML file, but was not specified"
+cdnLink NixopsConfig{cInstallerURLBase=Just cInstallerURLBase, ..} (ObjectKey key) = mconcat [ "https://", cInstallerURLBase, "/", key ]
 
 buildkiteTokenFile = "static/buildkite_token" :: String
 
-realFindInstallers :: ApplicationVersionKey -> InstallerPredicate -> Rev -> Maybe FilePath -> IO InstallersResults
-realFindInstallers keys instP daedalusRev destDir = do
+realFindInstallers :: InstallerPredicate -> Rev -> Maybe FilePath -> IO [CIResult]
+realFindInstallers instP daedalusRev destDir = do
   buildkiteToken <- liftIO $ loadBuildkiteToken
-  globalResult <- liftIO $ findVersionInfo keys daedalusRev
   st <- liftIO $ statuses <$> fetchGithubStatus "input-output-hk" "daedalus" daedalusRev
-  results <- mapM (handleCIResults instP destDir <=< findInstallersFromStatus buildkiteToken destDir) st
-  pure $ InstallersResults (concat results) globalResult
+  let findStatus = handleCIResults instP destDir <=< findInstallersFromStatus buildkiteToken destDir
+  concat <$> mapM findStatus st
+
+getInstallersResults :: ApplicationVersionKey -> InstallerPredicate -> Rev -> Maybe FilePath -> IO InstallersResults
+getInstallersResults keys instP daedalusRev destDir = do
+  ciResults <- realFindInstallers instP daedalusRev destDir
+  globalResult <- findVersionInfo keys daedalusRev
+  validateCIResultCount ciResults
+  pure $ InstallersResults ciResults globalResult
 
 handleCIResults :: InstallerPredicate -> Maybe FilePath -> Either Text [CIResult] -> IO [CIResult]
 handleCIResults instP destDir (Right rs) = do
@@ -149,6 +177,22 @@ handleCIResults instP destDir (Right rs) = do
   when (isJust destDir) $ fetchCIResults rs'
   pure rs'
 handleCIResults _ _ (Left msg) = T.putStrLn msg >> pure []
+
+validateCIResultCount :: [CIResult] -> IO ()
+validateCIResultCount rs = forM_ (ciResultsBySystem rs) $ \(ci, rs') -> let
+  urls = nub $ map ciResultUrl rs'
+  in case length urls of
+       0 -> printf ("warning: There are no CI results for "%w%"!\n") ci
+       1 -> printf ("Found a single CI result for "%w%".\n") ci
+       n -> do
+         printf ("error: Found too many ("%d%") CI results for "%w%"!\n") n ci
+         printf "The following builds were found:\n"
+         forM_ urls $ printf ("  "%s%"\n")
+         die $ format ("Use the --"%w%"-build-num option to choose one.\nExiting.") ci
+
+ciResultsBySystem :: [CIResult] -> [(CISystem, [CIResult])]
+ciResultsBySystem rs = [ (ci, filter ((== ci) . ciResultSystem) rs)
+                       | ci <- enumFromTo minBound maxBound ]
 
 buildkiteOrg     = "input-output-hk" :: Text
 pipelineDaedalus = "daedalus"        :: Text

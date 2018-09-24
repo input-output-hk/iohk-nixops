@@ -1,0 +1,28 @@
+diff --git a/src/hydra-queue-runner/queue-monitor.cc b/src/hydra-queue-runner/queue-monitor.cc
+index 862925b2..3c7be275 100644
+--- a/src/hydra-queue-runner/queue-monitor.cc
++++ b/src/hydra-queue-runner/queue-monitor.cc
+@@ -92,7 +92,7 @@ bool State::getQueuedBuilds(Connection & conn,
+ 
+         auto res = txn.parameterized
+             ("select id, project, jobset, job, drvPath, maxsilent, timeout, timestamp, globalPriority, priority from Builds "
+-             "where id > $1 and finished = 0 order by globalPriority desc, id")
++             "where id > $1 order by globalPriority desc, id")
+             (lastBuildId).exec();
+ 
+         for (auto const & row : res) {
+diff --git a/src/script/hydra-eval-jobset b/src/script/hydra-eval-jobset
+index 9d375c1b..711a1df4 100755
+--- a/src/script/hydra-eval-jobset
++++ b/src/script/hydra-eval-jobset
+@@ -746,7 +746,7 @@ sub checkJobsetWrapped {
+             # Wake up hydra-queue-runner.
+             my $lowestId;
+             while (my ($id, $x) = each %buildMap) {
+-                $lowestId = $id if $x->{new} && (!defined $lowestId || $id < $lowestId);
++                $lowestId = $id if (!defined $lowestId || $id < $lowestId);
+             }
+             $notifyAdded->execute($lowestId) if defined $lowestId;
+ 
+
+

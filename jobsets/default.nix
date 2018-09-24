@@ -74,6 +74,7 @@ let
       nixexprpath = "release.nix";
       inputs = {
         cardano = mkFetchGithub "${info.base.repo.clone_url} pull/${num}/head";
+        fasterBuild = { type = "boolean"; emailresponsible = false; value = "true"; }; # Disables optimization only for PR builds
       };
     };
   };
@@ -115,20 +116,23 @@ let
       };
     };
   };
-  nixopsPrJobsets = pkgs.lib.listToAttrs (pkgs.lib.mapAttrsToList makeNixopsPR nixopsPrs);
-  cardanoPrJobsets = pkgs.lib.listToAttrs (pkgs.lib.mapAttrsToList makeCardanoPR cardanoPrs);
-  daedalusPrJobsets = pkgs.lib.listToAttrs (pkgs.lib.mapAttrsToList makeDaedalusPR daedalusPrs);
-  plutusPrJobsets = pkgs.lib.listToAttrs (pkgs.lib.mapAttrsToList makePlutusPR plutusPrs);
+  PRExcludedLabels = import ./pr-excluded-labels.nix;
+  exclusionFilter = pkgs.lib.filterAttrs (_: prInfo: builtins.length (builtins.filter (prLabel: (builtins.elem prLabel.name PRExcludedLabels))
+                                                                                      (prInfo.labels or []))
+                                                     == 0);
+  nixopsPrJobsets   = pkgs.lib.listToAttrs (pkgs.lib.mapAttrsToList makeNixopsPR   (exclusionFilter nixopsPrs));
+  cardanoPrJobsets  = pkgs.lib.listToAttrs (pkgs.lib.mapAttrsToList makeCardanoPR  (exclusionFilter cardanoPrs));
+  daedalusPrJobsets = pkgs.lib.listToAttrs (pkgs.lib.mapAttrsToList makeDaedalusPR (exclusionFilter daedalusPrs));
+  plutusPrJobsets   = pkgs.lib.listToAttrs (pkgs.lib.mapAttrsToList makePlutusPR   (exclusionFilter plutusPrs));
   mainJobsets = with pkgs.lib; mapAttrs (name: settings: defaultSettings // settings) (rec {
     cardano-sl = mkCardano "develop";
     cardano-sl-master = mkCardano "master";
     cardano-sl-1-0 = mkCardano "release/1.0.x";
     cardano-sl-1-2 = mkCardano "release/1.2.0";
-    cardano-sl-1-3 = mkCardano "release/1.3.0";
+    cardano-sl-1-3 = mkCardano "release/1.3.1";
     daedalus = mkDaedalus "develop";
     plutus = mkPlutus "master";
     iohk-nixops = mkNixops "master" nixpkgs-src.rev;
-    iohk-nixops-staging = mkNixops "staging" nixpkgs-src.rev;
   });
   jobsetsAttrs = daedalusPrJobsets // nixopsPrJobsets // plutusPrJobsets // (if handleCardanoPRs then cardanoPrJobsets else {}) // mainJobsets;
   jobsetJson = pkgs.writeText "spec.json" (builtins.toJSON jobsetsAttrs);

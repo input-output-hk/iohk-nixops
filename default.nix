@@ -53,6 +53,7 @@ let
   } // optionalAttrs (cardano-sl-src-phase2 ? rev) {
     gitrev = cardano-sl-src-phase2.rev;
   });
+  github-webhook-util = pkgs.callPackage ./github-webhook-util { };
 
   iohk-ops = pkgs.haskell.lib.overrideCabal
              (compiler.callPackage ./iohk/default.nix {})
@@ -82,7 +83,7 @@ let
   '';
 
 in {
-  inherit nixops iohk-ops iohk-ops-integration-test;
+  inherit nixops iohk-ops iohk-ops-integration-test github-webhook-util;
   terraform = pkgs.callPackage ./terraform/terraform.nix {};
   mfa = pkgs.callPackage ./terraform/mfa.nix {};
 

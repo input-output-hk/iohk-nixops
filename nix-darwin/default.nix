@@ -5,7 +5,7 @@ let
 in
   pkgs.stdenv.mkDerivation {
     name = "deploy-nix-darwin";
-    buildInputs = [ ghc ];
+    buildInputs = [ ghc pkgs.nixStable ];
     shellHook = "eval $(egrep ^export ${ghc}/bin/ghc)";
     src = ./.;
     buildCommand = ''

@@ -32,7 +32,7 @@ let nodeMap = globals.nodeMap; in
         message = pagerDutyPolicy.nonCritical;
       });
 
-      cardano_node_simple_process = mkMonitor (cardano_node_simple_process_monitor // {
+      cardano_node_simple_process = mkMonitor (recursiveUpdate cardano_node_simple_process_monitor {
         message = pagerDutyPolicy.nonCritical;
         monitorOptions.thresholds = {
           warning = 3;

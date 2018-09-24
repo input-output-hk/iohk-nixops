@@ -7,8 +7,12 @@
 {-# LANGUAGE OverloadedStrings          #-}
 {-# OPTIONS_GHC -Wall -Wno-name-shadowing -Wno-missing-signatures -Wno-type-defaults #-}
 
-module Types where
+module Types
+  ( module Types
+  , module Arch
+  ) where
 
+import           Prelude               hiding (FilePath)
 import qualified Data.Aeson            as AE
 import qualified Data.ByteString.Char8 as BS.C8
 import           Data.Csv              (FromField (..))
@@ -19,9 +23,9 @@ import           Data.Text
 import           Data.Word             (Word16)
 import           Data.Yaml             (FromJSON (..), ToJSON (..))
 import           GHC.Generics          hiding (from, to)
-import           Prelude               hiding (FilePath)
 import qualified Turtle                        as Turtle
 
+import Arch
 
 -- * Elementary types
 --
@@ -46,17 +50,7 @@ newtype FQDN         = FQDN         { fromFQDN         :: Text   } deriving (Fro
 newtype IP           = IP           { getIP            :: Text   } deriving (Show, Generic, FromField)
 newtype PortNo       = PortNo       { fromPortNo       :: Int    } deriving (FromJSON, Generic, Show, ToJSON)
 newtype Username     = Username     { fromUsername     :: Text   } deriving (FromJSON, Generic, Show, IsString, ToJSON)
-data Arch = Linux64 | Mac64 | Win64 deriving (Show, Read, Eq, Generic)
 newtype ApplicationVersion = ApplicationVersion { getApplicationVersion :: Text } deriving (FromJSON, IsString, Show, Eq, Generic, ToJSON)
-type ApplicationVersionKey = Arch -> Text
-
-instance FromJSON Arch
-instance ToJSON Arch
-
-formatArch :: Arch -> Text
-formatArch Linux64 = "Linux"
-formatArch Mac64 = "macOS"
-formatArch Win64 = "Windows"
 
 -- * Flags
 --
@@ -199,7 +193,7 @@ data NixopsConfig = NixopsConfig
   , cEnvironment      :: Environment
   , cTarget           :: Target
   , cUpdateBucket     :: Text
-  , cInstallerURLBase :: Text
+  , cInstallerURLBase :: Maybe Text
   , cElements         :: [Deployment]
   , cFiles            :: [Text]
   , cDeplArgs         :: DeplArgs

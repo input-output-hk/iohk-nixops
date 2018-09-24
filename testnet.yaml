@@ -17,6 +17,7 @@ args:
 environment: Testnet
 topology: topology-testnet.yaml
 installer-bucket: updates-cardano-testnet
+installer-url-base: updates-cardano-testnet
 name: csl-testnet
 files:
 - deployments/keypairs.nix

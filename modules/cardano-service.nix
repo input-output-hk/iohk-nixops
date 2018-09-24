@@ -1,12 +1,11 @@
-with (import ./../lib.nix);
+with import ../lib.nix;
 
-globals: params:
 { config, pkgs, lib, options, ... }:
 let
   cfg = config.services.cardano-node;
   name = "cardano-node";
   stateDir = "/var/lib/cardano-node";
-  iohkPkgs = import ./../default.nix { enableProfiling = cfg.enableProfiling; };
+  iohkPkgs = import ../default.nix { enableProfiling = cfg.enableProfiling; };
   cardano = iohkPkgs.cardano-sl-node-static;
   cardano-config = iohkPkgs.cardano-sl-config;
   distributionParam = "(${toString cfg.genesisN},${toString cfg.totalMoneyAmount})";
@@ -15,9 +14,9 @@ let
 
   command = toString [
     cfg.executable
-    (optionalString (cfg.publicIP != null && params.name != "explorer")
+    (optionalString (cfg.publicIP != null && config.params.name != "explorer")
      "--address ${cfg.publicIP}:${toString cfg.port}")
-    (optionalString (params.name != "explorer")
+    (optionalString (config.params.name != "explorer")
      "--listen ${cfg.privateIP}:${toString cfg.port}")
     # Profiling
     # NB. can trigger https://ghc.haskell.org/trac/ghc/ticket/7836
@@ -38,9 +37,9 @@ let
     (optionalString cfg.jsonLog "--json-log ${stateDir}/jsonLog.json")
     (optionalString (cfg.statsdServer != null) "--metrics +RTS -T -RTS --statsd-server ${cfg.statsdServer}")
     (optionalString (cfg.serveEkg)             "--ekg-server ${cfg.privateIP}:8080")
-    (optionalString (cfg.productionMode && params.name != "explorer")
+    (optionalString (cfg.productionMode && config.params.name != "explorer")
       "--keyfile ${stateDir}/key${toString cfg.nodeIndex}.sk")
-    (optionalString (cfg.productionMode && globals.systemStart != 0) "--system-start ${toString globals.systemStart}")
+    (optionalString (cfg.productionMode && config.global.systemStart != 0) "--system-start ${toString config.global.systemStart}")
     (optionalString cfg.supporter "--supporter")
     "--log-config ${cardano-config}/log-configs/cluster.yaml"
     "--logs-prefix /var/lib/cardano-node"
@@ -50,8 +49,8 @@ let
     "--configuration-key ${config.deployment.arguments.configurationKey}"
     "--topology ${cfg.topologyYaml}"
     (optionalString (cfg.assetLockFile != null) "--asset-lock-file ${cfg.assetLockFile}")
-    "--node-id ${params.name}"
-    (optionalString cfg.enablePolicies ("--policies " + (if (params.typeIsCore) then "${./../benchmarks/policy_core.yaml}" else "${./../benchmarks/policy_relay.yaml}")))
+    "--node-id ${config.params.name}"
+    (optionalString cfg.enablePolicies ("--policies " + (if (config.params.typeIsCore) then "${../benchmarks/policy_core.yaml}" else "${../benchmarks/policy_relay.yaml}")))
     (optionalString cfg.enableProfiling "+RTS -p -RTS")
   ];
 in {

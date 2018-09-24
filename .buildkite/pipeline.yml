@@ -1,6 +1,6 @@
 steps:
   - label: 'iohk-ops'
-    command: 'scripts/nix-shell.sh --run scripts/ci.sh'
+    command: 'scripts/nix-shell.sh --run "scripts/ci.sh -b false"'
     agents:
       - "system=x86_64-linux"
     env:
@@ -8,7 +8,7 @@ steps:
     agents:
       system: x86_64-linux
   - label: 'iohk-ops-shellcheck'
-    command: 'scripts/nix-shell.sh -p shellcheck --run scripts/shellcheck.sh'
+    command: 'scripts/nix-shell.sh --run scripts/shellcheck.sh'
     agents:
       - "system=x86_64-linux"
     env:

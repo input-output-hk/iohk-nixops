@@ -1,6 +1,5 @@
 with (import ./../lib.nix);
 
-globals: params:
 { config, pkgs, lib, ...}:
 
 let

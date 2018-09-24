@@ -1,4 +1,4 @@
-[![Build status](https://badge.buildkite.com/5645abfe1411086f06a4d8cee1e3bbbbba9fb9318738f1fdb1.svg)](https://buildkite.com/input-output-hk/iohk-ops?theme=solarized)
+[![Build status](https://badge.buildkite.com/5645abfe1411086f06a4d8cee1e3bbbbba9fb9318738f1fdb1.svg?branch=master)](https://buildkite.com/input-output-hk/iohk-ops)
 
 Collection of tooling and automation to deploy IOHK infrastructure.
 
@@ -34,6 +34,8 @@ After cloning this repo, start a `nix-shell`.
 
     % nix-shell
     [nix-shell:~/iohk/iohk-ops]$ io --help
+
+For more documentation, see [`doc/iohk-ops-reference.md`](./doc/iohk-ops-reference.md).
 
 ### Development
 

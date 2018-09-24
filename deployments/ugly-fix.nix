@@ -5,6 +5,12 @@
   hydra-build-slave-2 = { resources, ... }: {
     deployment.ec2.keyPair = resources.ec2KeyPairs.cardano-keypair-IOHK-eu-central-1;
   };
+  hydra-build-slave-3 = { resources, ... }: {
+    deployment.ec2.keyPair = resources.ec2KeyPairs.cardano-keypair-IOHK-eu-central-1;
+  };
+  hydra-build-slave-4 = { resources, ... }: {
+    deployment.ec2.keyPair = resources.ec2KeyPairs.cardano-keypair-IOHK-eu-central-1;
+  };
   hydra = { resources, ... }: {
     deployment.ec2.keyPair = resources.ec2KeyPairs.cardano-test-eu;
   };
