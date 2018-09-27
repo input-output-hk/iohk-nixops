@@ -91,7 +91,6 @@ module NixOps (
   , enabled
   , disabled
   , opposite
-  , flag
   , toBool
 
   --
@@ -144,6 +143,7 @@ import           Data.Yaml                        (FromJSON(..), ToJSON(..))
 import           Debug.Trace                      (trace)
 import qualified Filesystem.Path.CurrentOS     as Path
 import           GHC.Generics              hiding (from, to)
+import           Options.Applicative              (flag)
 import           Prelude                   hiding (FilePath)
 import           Safe                             (headMay)
 import qualified System.IO                     as Sys
@@ -328,11 +328,6 @@ parserCommit desc = Commit <$> argText "commit" desc
 parserNodeLimit :: Parser (Maybe NodeName)
 parserNodeLimit = optional $ NodeName <$> (optText "just-node" 'n' "Limit operation to the specified node")
 
-flag :: Flag a => a -> ArgName -> Char -> Optional HelpMessage -> Parser a
-flag effect long ch help = (\case
-                               True  -> effect
-                               False -> opposite effect) <$> switch long ch help
-
 parserOptions :: Parser Options
 parserOptions = Options
                 <$> optional (optPath "chdir"     'C' "Run as if 'iohk-ops' was started in <path> instead of the current working directory.")
@@ -341,11 +336,11 @@ parserOptions = Options
                      <$>     (optText "on"        'o' "Limit operation to the specified node"))
                 <*> (optional $ IP
                      <$>     (optText "deployer"  'd' "Directly specify IP address of the deployer: do not detect"))
-                <*> flag Confirmed        "confirm"            'y' "Pass --confirm to nixops"
-                <*> flag Debug            "debug"              'd' "Pass --debug to nixops"
-                <*> flag Serialize        "serial"             's' "Disable parallelisation"
-                <*> flag Verbose          "verbose"            'v' "Print all commands that are being run"
-                <*> flag NoComponentCheck "no-component-check" 'p' "Disable deployment/*.nix component check"
+                <*> flag UnConfirmed Confirmed (long "confirm" <> short 'y' <> help "Pass --confirm to nixops")
+                <*> flag NoDebug Debug (long "debug" <> short 'd' <> help "Pass --debug to nixops")
+                <*> flag DontSerialize Serialize (long "serial" <> short 's' <> help "Disable parallelisation")
+                <*> flag NotVerbose Verbose (long "verbose" <> short 'v' <> help "Print all commands that are being run")
+                <*> flag ComponentCheck NoComponentCheck (long "no-component-check" <> short 'p' <> help "Disable deployment/*.nix component check")
                 <*> initialHeapSizeFlag
 
 -- Nix initial heap size -- default 12GiB, specify 0 to disable.
