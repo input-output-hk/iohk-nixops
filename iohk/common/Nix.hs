@@ -100,7 +100,7 @@ nixEvalExpr expr = eval >>= parseNixOutput
 -- | Build a nix expression, returning the store path.
 nixBuildExpr :: Text -> IO FilePath
 nixBuildExpr expr = fp <$> procNix "nix-build" ["--no-out-link", "--expr", expr]
-  where fp = FP.decode . S8.takeWhile (/= '\n')
+  where fp = FP.fromText . T.decodeUtf8 . S8.takeWhile (/= '\n')
 
 data NixError = NixError { nixErrorStatus :: Int, nixErrorMessage :: Text } deriving (Show, Typeable)
 instance Exception NixError
