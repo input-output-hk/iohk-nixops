@@ -59,7 +59,7 @@ let pkgs = import nixpkgs {};
             branch = "refs/tags/v0.4.1";
           };
           mantisSrc = mkGitSrc {
-            repo = "https://github.com/input-output-hk/mantis.git";
+            repo = "git@github.com:input-output-hk/mantis-cardano.git";
             branch = mantisBranch;
             deepClone = true;
           };
