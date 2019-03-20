@@ -86,14 +86,8 @@ in {
         useShortContext = 1
       </githubstatus>
       <githubstatus>
-        jobs = Cardano:cardano-ledger.*:required
-        inputs = ledger
-        excludeBuildFromContext = 1
-        useShortContext = 1
-      </githubstatus>
-      <githubstatus>
-        jobs = Cardano:cardano-ledger-specs.*:required
-        inputs = cardano-ledger-specs
+        jobs = Cardano:iohk-nix.*:required
+        inputs = iohk-nix
         excludeBuildFromContext = 1
         useShortContext = 1
       </githubstatus>
