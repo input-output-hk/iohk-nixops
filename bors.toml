@@ -1,6 +1,6 @@
 status = [
   "buildkite/iohk-ops",
-  "ci/hydra:serokell:iohk-ops:required",
+  "ci/hydra:Cardano:iohk-ops:required",
 ]
 timeout_sec = 7200
 required_approvals = 1

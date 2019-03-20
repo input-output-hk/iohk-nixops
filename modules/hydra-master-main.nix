@@ -80,7 +80,7 @@ in {
         input-output-hk = ${builtins.readFile ../static/github_token}
       </github_authorization>
       <githubstatus>
-        jobs = serokell:iohk-ops.*:required
+        jobs = Cardano:iohk-ops.*:required
         inputs = jobsets
         excludeBuildFromContext = 1
         useShortContext = 1
@@ -98,7 +98,7 @@ in {
         useShortContext = 1
       </githubstatus>
       <githubstatus>
-        jobs = serokell:cardano.*:required
+        jobs = Cardano:cardano.*:required
         inputs = cardano
         excludeBuildFromContext = 1
         useShortContext = 1
@@ -106,31 +106,31 @@ in {
       # DEVOPS-1208 This CI status for cardano-sl is needed while the
       # Daedalus Windows installer is built on AppVeyor or Buildkite
       <githubstatus>
-        jobs = serokell:cardano-sl.*:daedalus-mingw32-pkg
+        jobs = Cardano:cardano-sl.*:daedalus-mingw32-pkg
         inputs = cardano
         excludeBuildFromContext = 1
         useShortContext = 1
       </githubstatus>
       <githubstatus>
-        jobs = serokell:daedalus.*:tests\..*
+        jobs = Cardano:daedalus.*:tests\..*
         inputs = daedalus
         excludeBuildFromContext = 1
         useShortContext = 1
       </githubstatus>
       <githubstatus>
-        jobs = serokell:plutus.*:required
+        jobs = Cardano:plutus.*:required
         inputs = plutus
         excludeBuildFromContext = 1
         useShortContext = 1
       </githubstatus>
       <githubstatus>
-        jobs = serokell:log-classifier.*:required
+        jobs = Cardano:log-classifier.*:required
         inputs = log-classifier
         excludeBuildFromContext = 1
         useShortContext = 1
       </githubstatus>
       <githubstatus>
-        jobs = serokell:ouroboros-network.*:required
+        jobs = Cardano:ouroboros-network.*:required
         inputs = ouroboros-network
         excludeBuildFromContext = 1
         useShortContext = 1
