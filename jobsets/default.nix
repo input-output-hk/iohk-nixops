@@ -165,7 +165,7 @@ let
     schedulingshares = 42;
     checkinterval = 60;
     inputs = {
-      nixpkgs = mkFetchGithub "https://github.com/NixOS/nixpkgs.git ${nixpkgs-src.rev}";
+      nixpkgs = mkFetchGithub "https://github.com/input-output-hk/nixpkgs.git ${nixpkgs-src.rev}";
       jobsets = mkFetchGithub "${iohkOpsURI} master";
     };
     enableemail = false;
@@ -264,7 +264,7 @@ let
     nixexprpath = "jobsets/cardano.nix";
     description = "IOHK-Ops";
     inputs = {
-      nixpkgs = mkFetchGithub "https://github.com/NixOS/nixpkgs.git ${nixpkgsRev}";
+      nixpkgs = mkFetchGithub "https://github.com/input-output-hk/nixpkgs.git ${nixpkgsRev}";
       jobsets = mkFetchGithub "${iohkOpsURI} ${nixopsBranch}";
       nixops = mkFetchGithub "https://github.com/NixOS/NixOps.git tags/v1.5";
     };
@@ -275,7 +275,7 @@ let
       description = "PR ${num}: ${info.title}";
       nixexprpath = "jobsets/cardano.nix";
       inputs = {
-        nixpkgs = mkFetchGithub "https://github.com/NixOS/nixpkgs.git ${nixpkgs-src.rev}";
+        nixpkgs = mkFetchGithub "https://github.com/input-output-hk/nixpkgs.git ${nixpkgs-src.rev}";
         jobsets = mkFetchGithub "${info.base.repo.clone_url} pull/${num}/head";
         nixops = mkFetchGithub "https://github.com/NixOS/NixOps.git tags/v1.5";
       };
