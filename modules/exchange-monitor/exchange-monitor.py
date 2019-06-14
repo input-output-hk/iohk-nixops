@@ -54,7 +54,7 @@ def process_bithumb_assets():
     crypto_assets = json.loads(json_obj.read().decode('utf-8'))
     print("processing bithumb assets")
     for crypto_asset in crypto_assets:
-        if crypto_asset['status']== '0000':
+        if crypto_asset['status'] == '0000':
         bithumb_active.set(crypto_asset['Health']['IsActive'])
     sys.stdout.flush()
 
@@ -78,6 +78,6 @@ if __name__ == '__main__':
         try:
             process_bithumb_assets()
          except:
-            print("failed to process bittrex assets")
+            print("failed to process bithumb assets")
             bithumb_active.set(False)
         time.sleep(SLEEP_TIME)
