@@ -20,7 +20,10 @@ binance_withdraws = Gauge('binance_withdraws', 'Binance Withdraws enabled')
 bittrex_active = Gauge('bittrex_active', 'Bittrex Wallet enabled')
 bittrex_withdraw_queue_depth = Gauge('bittrex_withdraw_queue_depth', 'Bittrex Withdraw Queue Depth')
 bithumb_active = Gauge('bithumb_active', 'Bithumb Wallet enabled')
-hitbtc_active = Gauge('hitbtc_active', 'Hitbtc Wallet enabled')
+hitbtc_deposits = Gauge('hitbtc_deposits', 'Hitbtc Deposits enabled')
+hitbtc_withdraws = Gauge('hitbtc_withdraws', 'Hitbtc Withdraws enabled')
+coinex_deposits = Gauge('coinex_deposits', 'Coinex Deposits enabled')
+coinex_withdraws = Gauge('coinex_withdraws', 'Coinex Withdraws enabled')
 
 # Decorate function with metric.
 @BINANCE_REQUEST_TIME.time()
@@ -66,10 +69,23 @@ def process_hitbtc_assets():
     json_obj = urllib.request.urlopen(url)
     crypto_asset = json.loads(json_obj.read().decode('utf-8'))
     print("Processing HITbtc assets")
-    if crypto_asset['payinEnabled' and 'payoutEnabled'] == True:
-        hitbtc_active.set(True)   
+    if crypto_asset['id'] == 'ADA':
+        hitbtc_deposits.set(crypto_asset['payinEnabled']) 
+        hitbtc_withdraws.set(crypto_asset['payoutEnabled'])
     sys.stdout.flush()
-    
+
+# Decorate function with metric.
+@COINEX_REQUEST_TIME.time()
+def process_coinex_assets():
+    url = "https://api.coinex.com/v1/common/asset/config?coin_type=ADA"
+    json_obj = urllib.request.urlopen(url)
+    crypto_asset = json.loads(json_obj.read().decode('utf-8'))
+    print ("Processing Coinex assets")
+    if crypto_asset['code'] == 0:
+        coinex_deposits.set(crypto_asset['data']['ADA']['can_deposit'])
+        coinex_withdraws.set(crypto_asset['data']['ADA']['can_withdraw']) 
+    sys.stdout.flush()
+
 if __name__ == '__main__':
     # Start up the server to expose the metrics.
     start_http_server(EXPORTER_PORT)
