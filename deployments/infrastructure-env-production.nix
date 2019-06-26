@@ -192,13 +192,22 @@ in {
           }
           {
             alert = "exchange-down-hitbtc";
-            expr = "bithumb_active == 0";
+            expr = "hitbtc_deposits == false or hitbtc_withdraws == false";
             for = "10m";
             labels.severity = "exchange-down";
             annotations = {
               description = "{{$labels.alias}} withdraws/deposits down for >=10mins";
             };
-          }         
+          }
+          {
+            alert = "exchange-down-coinex";
+            expr = "coinex_deposits == false or coinex_withdraws == false";
+            for = "10m";
+            labels.severity = "exchange-down";
+            annotations = {
+              description = "{{$labels.alias}} withdraws/deposits down for >=10mins";
+            };
+          }
         ];
         alertmanager = {
           extraRoutes = [
