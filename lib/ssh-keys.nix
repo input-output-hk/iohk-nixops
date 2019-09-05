@@ -23,6 +23,13 @@
     charles        = [ "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBJBRhsdeDa6/lvaEOWKPLFJnc2aNsBE+aCiWh+PTVq5uAEPWRh6HdJfj90jXuLGprdRanFjV0vAO2xL3gB5wRxE= cmorgan@Marius.local" ];
   };
 
+  # Testnet Ops Keys
+
+  testnet = {
+    nicolas = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIN/P1dd//Vw7fTb/lcjA7oUpfoLaWk8+UF5PDGDnBCS6 nicolas" ];
+    amc     = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBYfnDuQK1LuxeZjwUGFRlrO8cGex9UcSSixpGcEX/X1 alan.mcnicholas@iohk.io" ];
+  };
+
   # Cardano SL developer keys:
   #
   csl-developers = {

@@ -187,6 +187,7 @@ in lib // (rec {
   inherit devOps csl-developers;
 
   devOpsKeys = allKeysFrom devOps;
+  testnetKeys = allKeysFrom devOps ++ allKeysFrom testnet;
   devKeys = devOpsKeys ++ allKeysFrom csl-developers;
   mantisOpsKeys = allKeysFrom devOps ++ allKeysFrom mantis-devOps;
 

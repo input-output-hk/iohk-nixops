@@ -25,7 +25,7 @@ in {
         isNormalUser = true;
         description  = "Cardano SL Testnet NixOps Deployer";
         group        = "deployers";
-        openssh.authorizedKeys.keys = devOpsKeys;
+        openssh.authorizedKeys.keys = devOpsKeys ++ testnetKeys;
       };
 
       # Deploy cardano-sl staging network
