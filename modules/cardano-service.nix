@@ -52,6 +52,7 @@ let
     "--node-id ${config.params.name}"
     (optionalString cfg.enablePolicies ("--policies " + (if (config.params.typeIsCore) then "${../benchmarks/policy_core.yaml}" else "${../benchmarks/policy_relay.yaml}")))
     (optionalString cfg.enableProfiling "+RTS -p -RTS")
+    (optionalString (cfg.socketPath != null) "--socket-path ${cfg.socketPath}")
   ];
 in {
   options = {
@@ -140,6 +141,12 @@ in {
         type = types.bool;
         description = "Serve EKG web UI on port 8080";
         default = false;
+      };
+
+      socketPath = mkOption {
+        type = types.nullOr types.path;
+        description = "The local socket filepath.";
+        default = "${stateDir}/node-core-${toString cfg.nodeIndex}.socket";
       };
     };
   };
