@@ -1,81 +1,79 @@
+#!/usr/bin/env python
+
 from prometheus_client import Gauge
 from prometheus_client import Summary
 from prometheus_client import start_http_server
 from numbers import Number
 import netifaces as ni
-import requests
 import json
 import random
 import time
-import urllib.request
-import sys
-import warnings
+from dateutil.parser import parse
+import sys, warnings, os, traceback, subprocess
 
-#Create a metric to track time spent and requests made.
-EXPORTER_PORT = 8000
+EXPORTER_PORT = int(os.getenv('PORT', '8000'), 10)
 SLEEP_TIME = 10
+JORMUNGANDR_API = os.getenv('JORMUNGANDR_API', 'http://127.0.0.1:3101/api')
+ADDRESSES = os.getenv('MONITOR_ADDRESSES', '').split()
+NODE_METRICS = [
+    "blockRecvCnt",
+    "lastBlockDate",
+    "lastBlockFees",
+    "lastBlockHash",
+    "lastBlockHeight",
+    "lastBlockSum",
+    "lastBlockTime",
+    "lastBlockTx",
+    "txRecvCnt",
+    "uptime",
+]
 
-JORMUNGANDR_REQUEST_TIME = Summary('jormungandr_process_time', 'Time spent processing jormungandr metrics')
-jormungandr_blockRecvCnt = Gauge('jormungandr_blockRecvCnt', 'Jormungandr blockRecvCnt')
-jormungandr_lastBlockDate = Gauge('jormungandr_lastBlockDate', 'Jormungandr lastBlockDate')
-jormungandr_lastBlockFees = Gauge('jormungandr_lastBlockFees', 'Jormungandr lastBlockFees')
-jormungandr_lastBlockHash = Gauge('jormungandr_lastBlockHash', 'Jormungandr lastBlockHash')
-jormungandr_lastBlockHeight = Gauge('jormungandr_lastBlockHeight', 'Jormungandr lastBlockHeight')
-jormungandr_lastBlockSum = Gauge('jormungandr_lastBlockSum', 'Jormungandr lastBlockSum')
-jormungandr_lastBlockTime = Gauge('jormungandr_lastBlockTime', 'Jormungandr lastBlockTime')
-jormungandr_lastBlockTx = Gauge('jormungandr_lastBlockTx', 'Jormungandr lastBlockTx')
-jormungandr_txRecvCnt = Gauge('jormungandr_txRecvCnt', 'Jormungandr txRecvCnt')
-jormungandr_uptime = Gauge('jormungandr_uptime', 'Jormungandr uptime')
+# Create a metric to track time spent and requests made.
+JORMUNGANDR_METRICS_REQUEST_TIME = Summary('jormungandr_metrics_process_time', 'Time spent processing jormungandr metrics')
+JORMUNGANDR_ADDRESSES_REQUEST_TIME = Summary('jormungandr_addresses_process_time', 'Time spent processing jormungandr addresses')
+
+jormungandr_node = { metric: Gauge(f'jormungandr_{metric}', 'Jormungandr {metric}') for metric in NODE_METRICS }
+
+jormungandr_funds = {}
+jormungandr_counts = {}
+for address in ADDRESSES:
+    jormungandr_funds[address] = Gauge(f'jormungandr_address_{address}_funds', f'Jormungandr Address {address} funds in Lovelace')
+    jormungandr_counts[address] = Gauge(f'jormungandr_address_{address}_counts', f'Jormungandr Address {address} counter')
+
 
 # Decorate function with metric.
-@JORMUNGANDR_REQUEST_TIME.time()
+@JORMUNGANDR_METRICS_REQUEST_TIME.time()
 def process_jormungandr_metrics():
+    metrics = jcli_rest(['node', 'stats', 'get'])
+    metrics['lastBlockTime'] = parse(metrics['lastBlockTime']).timestamp()
+    for metric, gauge in jormungandr_node.items():
+        gauge.set(sanitize(metrics[metric]))
 
-    ifList = ni.interfaces()
-    if len(ifList) == 0:
-        raise Exception('There are no network interfaces available.')
-    elif len(ifList) == 1 and ifList[0] == "lo":
-        raise Exception('Only the loopback interface is available.')
-    elif len(ifList) >= 2:
-        ifList.remove("lo")
-        if len(ifList) == 1:
-            iface = ifList[0]
-        elif len(ifList) > 1:
-            if "eth0" in ifList:
-                iface = "eth0"
-            else:
-                iface = ifList[0]
-            warnings.warn(f'More than one non-loopback interface is available: {ifList}.  Using {iface}.')
-    ip = ni.ifaddresses(iface)[ni.AF_INET][0]['addr']
-    url = f'http://{ip}:3001/api/v0/node/stats'
-    json_obj = urllib.request.urlopen(url)
-    metrics = json.loads(json_obj.read().decode('utf-8'))
-    print(f'processing jormungandr metrics from {url} via {iface}')
-    # print(f'metrics = {metrics}')
-    for metric in metrics:
-        if isinstance(metrics[metric], str):
+@JORMUNGANDR_ADDRESSES_REQUEST_TIME.time()
+def process_jormungandr_addresses():
+    for address in ADDRESSES:
+        data = jcli_rest(['account', 'get', address])
+        jormungandr_funds[address].set(sanitize(data['value']))
+        jormungandr_counts[address].set(sanitize(data['counter']))
+
+def sanitize(metric):
+    if isinstance(metric, str):
+        try:
+            metric = float(metric)
+        except ValueError:
             try:
-                metrics[metric] = float(metrics[metric])
+                metric = int(metric, 16)
             except ValueError:
-                try:
-                    metrics[metric] = int(metrics[metric], 16)
-                except ValueError:
-                    metrics[metric] = False
-        elif not isinstance(metrics[metric], (float, int)):
-            metrics[metric] = False
-    # print(f'Santized metrics = {metrics}')
-    # print(f'Metric = {metric} val = {metrics[metric]}')
-    jormungandr_blockRecvCnt.set(metrics['blockRecvCnt'])
-    jormungandr_lastBlockDate.set(metrics['lastBlockDate'])
-    jormungandr_lastBlockFees.set(metrics['lastBlockFees'])
-    jormungandr_lastBlockHash.set(metrics['lastBlockHash'])
-    jormungandr_lastBlockHeight.set(metrics['lastBlockHeight'])
-    jormungandr_lastBlockSum.set(metrics['lastBlockSum'])
-    jormungandr_lastBlockTime.set(metrics['lastBlockTime'])
-    jormungandr_lastBlockTx.set(metrics['lastBlockTx'])
-    jormungandr_txRecvCnt.set(metrics['txRecvCnt'])
-    jormungandr_uptime.set(metrics['uptime'])
-    sys.stdout.flush()
+                metric = False
+    elif not isinstance(metric, (float, int)):
+        metric = False
+    return metric
+
+def jcli_rest(args):
+    flags = ['--host', JORMUNGANDR_API, '--output-format', 'json']
+    params = ['@jcli@', 'rest', 'v0'] + args + flags
+    result = subprocess.run(params, stdout = subprocess.PIPE)
+    return json.loads(result.stdout)
 
 if __name__ == '__main__':
     # Start up the server to expose the metrics.
@@ -84,16 +82,11 @@ if __name__ == '__main__':
     while True:
         try:
             process_jormungandr_metrics()
+            process_jormungandr_addresses()
         except:
+            traceback.print_exc(file=sys.stdout)
             print("failed to process jormungandr metrics")
-            jormungandr_blockRecvCnt.set(False)
-            jormungandr_lastBlockDate.set(False)
-            jormungandr_lastBlockFees.set(False)
-            jormungandr_lastBlockHash.set(False)
-            jormungandr_lastBlockHeight.set(False)
-            jormungandr_lastBlockSum.set(False)
-            jormungandr_lastBlockTime.set(False)
-            jormungandr_lastBlockTx.set(False)
-            jormungandr_txRecvCnt.set(False)
-            jormungandr_uptime.set(False)
+            for gauge in jormungandr_funds.values(): gauge.set(False)
+            for gauge in jormungandr_counts.values(): gauge.set(False)
+            for gauge in jormungandr_node.values(): gauge.set(False)
         time.sleep(SLEEP_TIME)
