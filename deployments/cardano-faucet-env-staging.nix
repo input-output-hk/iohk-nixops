@@ -3,7 +3,7 @@ let nodeMap = { inherit (globals.fullMap) faucet; }; in
 
 {
   faucet = (import ../modules/cardano-staging.nix) nodeMap.faucet;
-  monitoring = {
+  monitoring = lib.optionalAttrs (nodeMap.faucet.nodeImpl == "haskell") {
     services.monitoring-services = {
       applicationRules = [
         {

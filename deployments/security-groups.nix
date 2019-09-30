@@ -119,7 +119,7 @@ with import ../lib.nix;
             [ "allow-cardano-static-peers-${core.name}-${core.value.region}-${core.value.org}" ];
         coreSGs     = ips: core:
           let neighbourNames = traceF (p: "${core.name} peers: " + concatStringsSep ", " core.value.peers) core.value.peers;
-              neighbours = map (name: globals.nodeMap.${name}) neighbourNames;
+              neighbours = map (name: globals.fullMap.${name}) neighbourNames;
               neighGrant =
               neigh:
               let ip = ips."${toString neigh.name}-ip";

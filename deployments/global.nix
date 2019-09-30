@@ -11,7 +11,7 @@
     _file = ./global.nix;
     imports = [ ../modules/globals.nix ];
     global = {
-      inherit (globals) environment systemStart topologyYaml nodeMap nRelays relays;
+      inherit (globals) environment systemStart topologyYaml nodeMap fullMap nRelays relays;
     } // lib.optionalAttrs (domain != null) {
       dnsDomainname = domain;
     };

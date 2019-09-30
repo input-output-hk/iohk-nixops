@@ -126,7 +126,7 @@ with import ../lib.nix;
         blocks = if config.params.typeIsCore then "high" else "normal";
       };
       trustedPeersAddresses = map
-        (n: "/ip4/${n.ip}/tcp/${toString config.global.nodeMap.${n.name}.port}")
+        (n: "/ip4/${n.ip}/tcp/${toString config.global.fullMap.${n.name}.port}")
         neighbourPairs;
       listenAddress = "/ip4/${
         if options.networking.privateIPv4.isDefined

@@ -72,6 +72,8 @@ with lib;
           };
           nodeMap = mkOption {
           };
+          fullMap = mkOption {
+          };
           relays = mkOption {
           };
         };
