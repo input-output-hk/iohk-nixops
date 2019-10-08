@@ -31,7 +31,6 @@ with import ../lib.nix;
       (sources.jormungandr-nix + "/nixos")
       (sources.jormungandr-faucet + "/nix/nixos")
       ./jormungandr-faucet.nix
-      ./jormungandr-monitor.nix
       ./cardano-base.nix
       ./globals.nix
     ];
