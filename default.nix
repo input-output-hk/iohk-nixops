@@ -75,18 +75,9 @@ let
     fi
     exit 0
   '';
-  defaultIohkNix = let
-    spec = builtins.fromJSON (builtins.readFile ./iohk-nix.json);
-  in builtins.fetchTarball {
-    url = "${spec.url}/archive/${spec.rev}.tar.gz";
-    inherit (spec) sha256;
-  };
-  cachecacheSrc = pkgs.fetchFromGitHub {
-    owner = "cleverca22";
-    repo = "cachecache";
-    rev = "37959a2dcce5c93bf424da899d3d5eaf2b3f1768";
-    sha256 = "1d92agrsgs1g05ps3l7wbbib9knq86gq335k5kakzl9rlzdaj4z0";
-  };
+  defaultIohkNix = sources.iohk-nix;
+
+  cachecacheSrc = sources.cachecache;
   IFDPins = pkgs.writeText "ifd-pins" ''
     nixops: ${nixopsUnstable}
     nixpkgs: ${pkgs.path}

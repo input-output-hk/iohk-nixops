@@ -1,4 +1,16 @@
 {
+    "cachecache": {
+        "branch": "master",
+        "description": null,
+        "homepage": null,
+        "owner": "cleverca22",
+        "repo": "cachecache",
+        "rev": "37959a2dcce5c93bf424da899d3d5eaf2b3f1768",
+        "sha256": "1d92agrsgs1g05ps3l7wbbib9knq86gq335k5kakzl9rlzdaj4z0",
+        "type": "tarball",
+        "url": "https://github.com/cleverca22/cachecache/archive/37959a2dcce5c93bf424da899d3d5eaf2b3f1768.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
     "cardano-byron-proxy": {
         "branch": "avieth/static_config",
         "description": "A bydirectional proxy between the Shelly and Byron versions of the Cardano network",
@@ -84,15 +96,15 @@
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "niv": {
-        "branch": "master",
+        "branch": "iohk",
         "description": "Easy dependency management for Nix projects",
-        "homepage": "https://github.com/nmattia/niv",
-        "owner": "nmattia",
+        "homepage": "https://github.com/input-output-hk/niv",
+        "owner": "input-output-hk",
         "repo": "niv",
-        "rev": "8b7b70465c130d8d7a98fba1396ad1481daee518",
-        "sha256": "0fgdrxn2vzpnzr6pxaiyn5zzbd812c6f7xjjhfir0kpzamjnxwwl",
+        "rev": "4229fbcf62997467c34283a2f353702359e78e5a",
+        "sha256": "1y1h6aj0rxrrhvp9jpr6xw3zsa1l8ac25ng4xzjskr5kg620pxqr",
         "type": "tarball",
-        "url": "https://github.com/nmattia/niv/archive/8b7b70465c130d8d7a98fba1396ad1481daee518.tar.gz",
+        "url": "https://github.com/input-output-hk/niv/archive/4229fbcf62997467c34283a2f353702359e78e5a.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "nixops-iohk": {
