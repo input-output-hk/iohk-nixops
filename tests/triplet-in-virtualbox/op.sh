@@ -1,4 +1,5 @@
 #!/bin/sh
+# shellcheck disable=SC2039,SC2191,SC2034,SC2086,SC2154
 
 ## 1. packages managed by Niv: ../nix/sources.json
 
