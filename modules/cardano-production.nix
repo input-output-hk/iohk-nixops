@@ -1,7 +1,7 @@
 with import ../lib.nix;
 
 params:
-{ name, config, pkgs, resources, ... }: {
+{ name, config, pkgs, lib, resources, ... }: {
   imports = [
     ./production.nix
     ./monitoring-exporters.nix
@@ -21,7 +21,7 @@ params:
              then "t3.xlarge"
              else "t2.large");
 
-  boot.loader.grub = lib.mkIf (deployment.ec2.instanceType == "t3.xlarge") {
+  boot.loader.grub = lib.mkIf (config.deployment.ec2.instanceType == "t3.xlarge") {
     device = lib.mkForce "/dev/nvme0n1"; # t3.xlarge has an nvme disk, and amazon-image.nix isnt handling it right yet
   };
 }

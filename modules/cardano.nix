@@ -6,8 +6,9 @@ with import ../lib.nix;
   let
     assetLockFile = ../static/asset-locked-addresses.txt;
     nodeNameToPublicIP   = name:
-      if nodes.${name}.options.networking.publicIPv4.isDefined
-      then nodes.${name}.config.networking.publicIPv4 else "";
+      let ip = nodes.${name}.config.networking.publicIPv4;
+      in if (nodes.${name}.options.networking.publicIPv4.isDefined && ip != null)
+      then ip else "";
     neighbourPairs       = map (n: { name = n; ip = nodeNameToPublicIP n; })
                                (builtins.trace "${config.params.name}: role '${config.params.nodeType}'" config.params.peers);
     ppNeighbour          = n: "${n.name}: ${n.ip}";
@@ -171,13 +172,13 @@ with import ../lib.nix;
          else
            let relayAddressSpecs =
              if (config.global.environment == "development" || config.global.environment == "benchmark")
-             then map (name: { addrType = "addr"; addr = nodeNameToPublicIP name; })
+             then map (name: { addrType = "addr"; addr = builtins.trace "${name}:  ${if (nodeNameToPublicIP name) == null then "null" else nodeNameToPublicIP name}" (nodeNameToPublicIP name); })
                       (map (x: x.name) config.global.relays)
              else map (idx:  { addrType = "host"; addr = "cardano-node-${toString idx}.${config.global.dnsDomainname}"; })
                       (range 0 (config.global.nRelays - 1));
            in pkgs.writeText "topology-explorer.yaml" ''
 wallet:
-  relays: [[${concatStringsSep ", " (map ({ addrType, addr }: "{\"${addrType}\": \"${addr}\", \"port\": ${toString config.params.port}}")
+  relays: [[${concatStringsSep ", " (map ({ addrType, addr }: "{\"${addrType}\": \"${builtins.trace addr addr}\", \"port\": ${builtins.trace config.params.port (toString config.params.port)}}")
                                          relayAddressSpecs)}]]
   valency: 3
   fallbacks: 2
