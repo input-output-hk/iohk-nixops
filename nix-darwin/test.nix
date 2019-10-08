@@ -29,8 +29,9 @@ let
     cp -r --no-preserve=mode ${./services} nix-darwin/services
     cp ${./test.nix} nix-darwin/test.nix
     cp ${../lib.nix} lib.nix
-    cp ${../iohk-nix.json} iohk-nix.json
-    cp ${../nixpkgs-src.json} nixpkgs-src.json
+    mkdir nix
+    cp ${../nix/sources.json} ./nix/
+    cp ${../nix/sources.nix} ./nix/
     mkdir lib
     cp ${../lib/ssh-keys.nix} lib/ssh-keys.nix
     cp ${../fetch-nixpkgs.nix} fetch-nixpkgs.nix
