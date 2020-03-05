@@ -181,6 +181,7 @@ let
       url = "https://github.com/input-output-hk/haskell.nix.git";
       branch = "master";
       prs = haskellNixPrsJSON;
+      bors = true;
     };
 
     cardano-wallet = {
